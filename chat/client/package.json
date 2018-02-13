@@ -1,0 +1,15 @@
+{
+  "name": "chat-client",
+  "version": "1.0.0",
+  "description": "chat-client",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Bálint Juhász",
+  "license": "ISC",
+  "dependencies": {
+    "bootstrap": "^4.0.0",
+    "jquery": "^3.3.1",
+    "webrtc-adapter": "^6.1.1"
+  }
+}
