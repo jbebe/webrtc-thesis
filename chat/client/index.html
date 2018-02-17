@@ -9,6 +9,11 @@
     <title>WebRTC Chat Client</title>
 
     <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <style>
+        .container {
+            height: 90vh;
+        }
+    </style>
 
     <!-- <script src="node_modules/webrtc-adapter/out/adapter.js"></script> -->
     <script src="node_modules/jquery/dist/jquery.slim.min.js"></script>
@@ -16,6 +21,22 @@
 </head>
 
 <body>
+
+<div class="container ">
+    <div class="card" style="width: 20rem; padding: 0.2rem">
+        <div class="card-body">
+            <h5 class="card-title">Peer Chat</h5>
+            <h6 class="card-subtitle mb-2 text-muted">For two parties</h6>
+            <p class="card-text">
+                In this PoC I use <code>createDataChannel</code> to create a peer-to-peer chat application.
+                The two clients have to share their SDP description with each other to set up the connection.
+                There is no singaling server yet.
+            </p>
+            <a href="#" id="initiate-chat" class="card-link">Card link</a>
+            <a href="#" id="join-chat" class="card-link">Another link</a>
+        </div>
+    </div>
+</div>
 
 <!--<script src="js/Utils.js"></script>
 <script src="js/DataStreamController.js"></script>-->

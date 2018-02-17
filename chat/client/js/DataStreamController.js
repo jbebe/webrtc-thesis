@@ -8,6 +8,8 @@ export class DataStreamController {
     this.remoteConnection = null;
     this.sendChannel = null;
     this.receiveChannel = null;
+    this.localDescription = null;
+    this.remoteDescription = null;
     
     this.initConnection(servers)
   }
@@ -67,6 +69,7 @@ export class DataStreamController {
   }
   
   gotDescription1(desc) {
+    this.localDescription = desc;
     console.log(desc);
     this.localConnection.setLocalDescription(desc);
     trace('Offer from localConnection \n' + desc.sdp.split('\n').map(t => `\t${t}`).join('\n'));
