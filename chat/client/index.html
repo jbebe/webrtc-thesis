@@ -9,38 +9,23 @@
     <title>WebRTC Chat Client</title>
 
     <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
-    <style>
-        .container {
-            height: 90vh;
-        }
-    </style>
+    <link rel="stylesheet" href="css/main.css">
 
     <!-- <script src="node_modules/webrtc-adapter/out/adapter.js"></script> -->
-    <script src="node_modules/jquery/dist/jquery.slim.min.js"></script>
+    <script src="node_modules/jquery/dist/jquery.min.js"></script>
     <script src="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="node_modules/mustache/mustache.min.js"></script>
+
 </head>
 
 <body>
 
-<div class="container ">
-    <div class="card" style="width: 20rem; padding: 0.2rem">
-        <div class="card-body">
-            <h5 class="card-title">Peer Chat</h5>
-            <h6 class="card-subtitle mb-2 text-muted">For two parties</h6>
-            <p class="card-text">
-                In this PoC I use <code>createDataChannel</code> to create a peer-to-peer chat application.
-                The two clients have to share their SDP description with each other to set up the connection.
-                There is no singaling server yet.
-            </p>
-            <a href="#" id="initiate-chat" class="card-link">Card link</a>
-            <a href="#" id="join-chat" class="card-link">Another link</a>
-        </div>
-    </div>
-</div>
+<div class="alert alert-danger global-alert" role="alert" style="display:none;"></div>
 
-<!--<script src="js/Utils.js"></script>
-<script src="js/DataStreamController.js"></script>-->
-<script src="js/Script.js" type="module"></script>
+<div class="page"></div>
+
+<script src="node_modules/navigo/lib/navigo.min.js"></script>
+<script src="js/main.js" type="module"></script>
 
 </body>
 

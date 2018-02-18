@@ -1,0 +1,29 @@
+/** {
+    outline: rgba(255, 0, 0, 0.2) solid 1px;
+}*/
+
+.page {
+    height: 100vh;
+}
+.window {
+    position: relative;
+    top: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    left: 50%;
+}
+
+.global-alert {
+    border-radius: 0 !important;
+}
+
+pre.language-sdp {
+    color: #333;
+    font-size: 0.7rem;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+}
+
+/* keyword */
+pre.language-sdp > .kw {
+    color: dodgerblue;
+}

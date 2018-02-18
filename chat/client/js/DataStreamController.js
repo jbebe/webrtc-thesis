@@ -1,4 +1,5 @@
-import { trace } from "/js/Utils.js";
+import { trace } from "./utils.js";
+
 'use strict';
 
 export class DataStreamController {
@@ -9,9 +10,16 @@ export class DataStreamController {
     this.sendChannel = null;
     this.receiveChannel = null;
     this.localDescription = null;
-    this.remoteDescription = null;
+    this.remoteDescriptions = [];
     
     this.initConnection(servers)
+  }
+  
+  get description(){
+    return {
+      'local': this.localDescription,
+      'remote': this.remoteDescriptions
+    }
   }
   
   sendData(data){
@@ -50,8 +58,8 @@ export class DataStreamController {
     this.remoteConnection.ondatachannel = this.receiveChannelCallback;
     
     this.localConnection.createOffer().then(
-      (desc) => this.gotDescription1(desc),
-      (error) => this.onCreateSessionDescriptionError(error)
+      this.gotLocalDescription.bind(this),
+      this.onCreateSessionDescriptionError
     )
   }
   
@@ -68,19 +76,19 @@ export class DataStreamController {
     trace('Receive channel state is: ' + readyState)
   }
   
-  gotDescription1(desc) {
+  gotLocalDescription(desc) {
     this.localDescription = desc;
     console.log(desc);
     this.localConnection.setLocalDescription(desc);
     trace('Offer from localConnection \n' + desc.sdp.split('\n').map(t => `\t${t}`).join('\n'));
     this.remoteConnection.setRemoteDescription(desc);
     this.remoteConnection.createAnswer().then(
-      (desc) => this.gotDescription2(desc),
+      (desc) => this.gotRemoteDescription(desc),
       (error) => this.onCreateSessionDescriptionError(error)
     )
   }
   
-  gotDescription2(desc) {
+  gotRemoteDescription(desc) {
     this.remoteConnection.setLocalDescription(desc);
     trace('Answer from remoteConnection \n' + desc.sdp.split('\n').map(t => `\t${t}`).join('\n'));
     this.localConnection.setRemoteDescription(desc)
