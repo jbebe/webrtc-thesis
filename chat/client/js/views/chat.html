@@ -1,0 +1,47 @@
+<div class="window col-sm-12 col-md-6 row">
+    <h2><a href="/#!/">⤣</a></h2>
+    <div class="col-sm-12">
+        <pre class="console col-sm-12 debug-log"></pre>
+    </div>
+    <div class="col-sm-12 col-md-12">
+        <button type="button" class="btn btn-info btn-sm action-btn" id="copy-sdp"
+                data-clipboard-action="copy" data-clipboard-target="pre.language-sdp">Copy SDP Header</button>
+        <button type="button" class="btn btn-info btn-sm action-btn" id="add-sdp"
+                data-toggle="modal" data-target="#sdpInputModal">Add {{ user-type }}'s SDP Header</button>
+    </div>
+    <div class="col-sm-12 col-md-6">
+        <pre class="console language-sdp" id="sdp-content"></pre>
+    </div>
+    <div class="col-sm-12 col-md-6">
+        <div class="row col-sm-12" style="height: 10rem">
+            <video id="receive-video" class="col-sm-6"></video>
+            <video id="stream-video" class="col-sm-6"></video>
+        </div>
+        <div class="row col-sm-12">
+            <pre class="console col-sm-12 chat-window"></pre>
+        </div>
+        <div class="row col-sm-12">
+            <input class="col-sm-12 chat-input">
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="sdpInputModal" tabindex="-1" role="dialog" aria-labelledby="sdpInputModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="sdpInputModalLabel">{{ modal.title }}</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                {{{ modal.body }}}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ modal.cancel }}</button>
+                <button type="button" class="btn btn-primary modal-accept-btn">{{ modal.ok }}</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -3,25 +3,27 @@
 let __traceIncrement = 1;
 
 export function trace(msg){
+  console.log(msg);
+  const $debugLog = $('.debug-log');
+  $debugLog.append(`<div>${JSON.stringify(msg)}</div>`).scrollTop($debugLog[0].scrollHeight);
   //console.log(`${__traceIncrement++}: ${msg}`);
 }
 
 export function getHashPath(hash){
   hash = hash || location.hash;
-  return location.hash.replace(/\/?(?:#!)?\/?/g, '');
+  const path = location.hash.replace(/\/?(?:#!)?\/?/g, '');
+  return path || '/';
 }
 
 function highlightSdp(text){
   // categories
   text = text.replace(/([vosiuepcbOzkatrm]=)/g, c => {
-    console.log(c);
     return `<b class="kw">${c}</b>`;
   });
   
   // numbers
-  text = text.replace(/(\d)/g, c => {
-    console.log(c);
-    return `<b class="kw">${c}</b>`;
+  text = text.replace(/(?:^|\s)(\d+)(?:\s|$)/g, c => {
+    return `<b class="n">${c}</b>`;
   });
   return text;
 }

@@ -7,8 +7,8 @@
 }
 .window {
     position: relative;
-    top: 50%;
-    transform: translateX(-50%) translateY(-50%);
+    top: 1rem;
+    transform: translateX(-50%);
     left: 50%;
 }
 
@@ -16,14 +16,59 @@
     border-radius: 0 !important;
 }
 
-pre.language-sdp {
+.console {
     color: #333;
     font-size: 0.7rem;
     word-wrap: break-word;
     white-space: pre-wrap;
+    border: #bbb solid 1px;
+    padding: 0.6rem;
 }
 
 /* keyword */
 pre.language-sdp > .kw {
     color: dodgerblue;
+}
+
+/* number */
+pre.language-sdp > .n {
+    color: chocolate;
+}
+
+.chat-window {
+    height: 50vh;
+    overflow: hidden;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+}
+
+.action-btn {
+    margin-bottom: 0.6rem;
+}
+
+.chat-input {
+    margin-top: 0.2rem;
+    overflow: visible;
+}
+
+.debug-log::before, pre.language-sdp::before {
+    display: block;
+    margin-left: -0.2rem;
+    margin-bottom: 0.2rem;
+    content: 'debug log';
+    color: darkgrey;
+}
+
+.debug-log {
+    height: 10rem;
+    overflow-x: hidden;
+    overflow-y: scroll;
+}
+
+.debug-log div:nth-child(even) {
+    background: #eee;
+}
+
+video {
+
 }
