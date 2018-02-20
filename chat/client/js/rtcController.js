@@ -4,10 +4,24 @@ import { trace } from "./utils.js";
 
 class RtcControllerBase {
   
-  constructor(receivingMediaElement){
-    this.connection = new RTCPeerConnection();
-    this.dataChannel = this.connection.createDataChannel('data-channel-name', { reliable: true });
-    this.receivingMediaElement = receivingMediaElement;
+  static get RtcConfig(){
+    return {'iceServers': []};
+  };
+  
+  constructor(options){
+    this.connection = new RTCPeerConnection(this.RtcConfig);
+    this.dataChannel = null;
+    this.receivingMediaElement = options.receivingMediaElement;
+    this.connection.onaddstream = this.onAddStream;
+    this.onMessage = options.onMessage;
+    this.localDescription = null;
+    
+    this.connection.onicecandidate = this.onIceCandidate.bind(this);
+    this.connection.onsignalingstatechange = trace;
+    this.connection.oniceconnectionstatechange = trace;
+    this.connection.onicegatheringstatechange = trace;
+    this.connection.onaddstream = this.onAddStream.bind(this);
+    this.connection.onconnection = trace;
   }
   
   send(data){
@@ -22,17 +36,31 @@ class RtcControllerBase {
     trace(event);
   }
   
-  static onIceCandidate(event){
-    trace(event);
+  onIceCandidate(event){
+    if (event.candidate === null){
+      this.localDescription = this.connection.localDescription;
+      trace(JSON.stringify(this.localDescription));
+    }
+  }
+  
+  async getLocalDescription(){
+    return new Promise(resolve => {
+      setInterval(() => {
+        if (this.localDescription !== null){
+          resolve(this.localDescription);
+        }
+      }, 1000/*ms*/);
+    });
   }
   
   onAddStream(event){
-    trace('got remote stream', event.stream);
-    if (this.receivingMediaElement.srcObject === undefined){
-      trace('media object is already streaming!');
-    } else {
+    trace('got remote stream' + event.stream);
+    if (this.receivingMediaElement.srcObject === null){
       this.receivingMediaElement.autoplay = true;
       this.receivingMediaElement.srcObject = event.stream;
+      
+    } else {
+      trace('media object is already streaming!');
     }
   }
   
@@ -55,55 +83,42 @@ export class RtcHostController extends RtcControllerBase {
       receivingMediaElement: HTMLElement
     };*/
     
-    super(options.receivingMediaElement);
+    super(options);
     this.options = options;
   }
   
   async init(){
-    return Promise.all([
-      // media stream
-      new Promise(resolve =>{
-        navigator.mediaDevices.getUserMedia({ audio: true, video: true })
-          .then(stream => {
-            // show media on screen
-            trace(this.options);
-            this.options.streamingMediaElement.autoplay = true;
-            this.options.streamingMediaElement.srcObject = stream;
-            this.options.streamingMediaElement.play();
-            this.connection.addStream(stream);
-            resolve(true);
-          })
-          .catch(error =>{
-            trace(error);
-            resolve(false);
-          });
-      }),
-      this.initDataChannel(),
-      // init description
-      new Promise(resolve =>{
+    // media stream
+    navigator.mediaDevices.getUserMedia({ audio: false, video: true })
+      .then(stream =>{
+        // show media on screen
+        trace(this.options);
+        this.options.streamingMediaElement.autoplay = true;
+        this.options.streamingMediaElement.srcObject = stream;
+        this.options.streamingMediaElement.play().catch(trace);
+        this.connection.addStream(stream);
+        trace('#1 stream added to connection');
+      })
+      .then(() =>{
+        // init datachannel
+        this.initDataChannel();
+        trace('#2 data channel initialized');
+      })
+      .then(() => {
         // set local description
-        this.connection.createOffer()
+        this.connection.createOffer({
+            optional: [],
+            mandatory: {
+              OfferToReceiveAudio: false,
+              OfferToReceiveVideo: true
+            }
+          })
           .then(async sdpHeader =>{
-            this.connection.setLocalDescription(sdpHeader).then(resolve);
+            this.connection.setLocalDescription(sdpHeader).catch(trace);
+            trace('#3 local description set');
           })
           .catch(trace);
-        
-        this.connection.onicecandidate = event =>{
-          if (event.candidate === null){
-            trace(JSON.stringify(this.connection.localDescription));
-          }
-        };
-        
-        this.connection.onaddstream = this.onAddStream;
-        this.connection.onsignalingstatechange = trace;
-        this.connection.oniceconnectionstatechange = trace;
-        this.connection.onicegatheringstatechange = trace;
-      })
-    ]);
-  }
-  
-  getDescription(){
-    return this.connection.localDescription;
+      });
   }
   
   addRemoteDescription(sdpHeader){
@@ -115,21 +130,22 @@ export class RtcHostController extends RtcControllerBase {
   //
   
   initDataChannel(){
+    this.dataChannel = this.connection.createDataChannel('data-channel-name', { reliable: true });
     this.dataChannel.onopen = trace;
     this.dataChannel.onmessage = event =>{
-      trace(`dataChannel message: ${e.data}`);
-      if (e.data.size){
+      trace(`dataChannel message: ${event.data}`);
+      if (event.data.size){
         // receive file
       } else {
-        console.log(e);
-        const data = JSON.parse(e.data);
+        const data = JSON.parse(event.data);
         if (data.type === 'file'){
           // receive file
         } else {
           // update chat board
+          this.onMessage(event.data);
         }
       }
-    }
+    };
   }
   
 }
@@ -146,32 +162,37 @@ export class RtcClientController extends RtcControllerBase {
       receivingMediaElement: HTMLElement
     };*/
     
-    super(options.receivingMediaElement);
+    super(options);
     this.options = options;
   }
   
   init(){
-    this.connection.ondatachannel = this.onDataChannel;
-    this.connection.onicecandidate = trace;
-    this.connection.onsignalingstatechange = trace;
-    this.connection.oniceconnectionstatechange = trace;
-    this.connection.onicegatheringstatechange = trace;
-    this.connection.onaddstream = trace;
-    this.connection.onconnection = trace;
-  }
-  
-  async acceptOffer(remoteDescription){
-    return new Promise(resolve =>{
-      this.connection.setRemoteDescription(remoteDescription).then(async () =>{
-        const localDescription = await this.connection.createAnswer();
-        this.connection.setLocalDescription(localDescription)
-          .then(() => resolve(localDescription));
+    navigator.mediaDevices.getUserMedia({ audio: false, video: true })
+      .then(stream =>{
+        // show media on screen
+        trace(this.options);
+        this.options.streamingMediaElement.autoplay = true;
+        this.options.streamingMediaElement.srcObject = stream;
+        this.options.streamingMediaElement.play();
+        this.connection.addStream(stream);
+      })
+      .catch(error =>{
+        trace(error);
       });
-    });
+    this.connection.ondatachannel = this.onDataChannel.bind(this);
   }
   
-  getDescription(){
-    return this.connection.localDescription;
+  acceptOffer(remoteDescription){
+    this.connection.setRemoteDescription(remoteDescription).then(async () =>{
+      const localDescription = await this.connection.createAnswer({
+        optional: [],
+        mandatory: {
+          OfferToReceiveAudio: true,
+          OfferToReceiveVideo: true
+        }
+      });
+      this.connection.setLocalDescription(localDescription).catch(trace);
+    });
   }
   
   //
@@ -179,21 +200,21 @@ export class RtcClientController extends RtcControllerBase {
   //
   
   onDataChannel(event){
-    const dataChannel = event.channel || event;
-    console.log('received dataChannel', arguments);
-    dataChannel.onopen = event =>{
-      console.log('data channel connect')
+    this.dataChannel = event.channel || event;
+    trace('received dataChannel');
+    this.dataChannel.onopen = event =>{
+      trace('data channel connect')
     };
-    dataChannel.onmessage = function(e){
-      console.log('message: ', e.data);
-      if (e.data.size){
+    this.dataChannel.onmessage = event => {
+      trace('message: ' + event.data);
+      if (event.data.size){
         // receive file
       } else {
-        const data = JSON.parse(e.data);
+        const data = JSON.parse(event.data);
         if (data.type === 'file'){
           // receive file
         } else {
-          trace(data);
+          this.onMessage(event.data);
         }
       }
     }

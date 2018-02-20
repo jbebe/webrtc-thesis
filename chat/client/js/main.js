@@ -1,4 +1,4 @@
-import { RtcHostController, RtcClientController } from "./RtcController.js";
+import { RtcHostController, RtcClientController } from "./rtcController.js";
 import { trace, getHashPath, initHighlight } from "./utils.js";
 
 'use strict';
@@ -25,7 +25,7 @@ import { trace, getHashPath, initHighlight } from "./utils.js";
         resolve(page);
       }
     });
-  };
+  };1
   
   let rtcController = null;
   const pageCache = {};
@@ -70,6 +70,21 @@ import { trace, getHashPath, initHighlight } from "./utils.js";
           });
         });
         
+        rtcController = new RtcHostController({
+          streamingMediaElement: $('#receive-video')[0],
+          receivingMediaElement: $('#stream-video')[0],
+          onMessage: message => {
+            $('.chat-window').append(`<div>${message}</div>`);
+          }
+        });
+        rtcController.init().then(async () =>{
+          rtcController.getLocalDescription().then(description => {
+            $('#sdp-content').text(JSON.stringify(description));
+            // highlight syntax
+            initHighlight('pre.language-sdp');
+          }).catch(trace);
+        });
+    
         // handle add sdp
         $('.modal-accept-btn').click(function(event){
           const sdpValue = $(this).closest('.modal-content').find('textarea.console').val();
@@ -77,22 +92,10 @@ import { trace, getHashPath, initHighlight } from "./utils.js";
           $('#sdpInputModal').modal('hide');
         });
         
-        rtcController = new RtcHostController({
-          streamingMediaElement: $('#receive-video')[0],
-          receivingMediaElement: $('#stream-video')[0]
-        });
-        rtcController.init().then(() =>{
-          const sdpObj = rtcController.getDescription();
-          $('#sdp-content').text(JSON.stringify(sdpObj));
-          
-          // highlight syntax
-          initHighlight('pre.language-sdp');
-        });
-        
         $('.chat-input').keypress(function (event){
           if (event.which === 13){
             const $this = $(this);
-            trace('this val: ' + $this.val());
+            $('.chat-window').append(`<div>${$this.val()}</div>`);
             rtcController.send({ message: $this.val() });
             $this.val('');
             event.preventDefault();
@@ -142,23 +145,38 @@ import { trace, getHashPath, initHighlight } from "./utils.js";
         });
       });
       
+      rtcController = new RtcClientController({
+        streamingMediaElement: $('#receive-video')[0],
+        receivingMediaElement: $('#stream-video')[0],
+        onMessage: message => {
+          $('.chat-window').append(`<div>${message}</div>`);
+        }
+      });
+      rtcController.init();
+    
       // handle add sdp
       $('.modal-accept-btn').click(async function(event){
         const sdpValue = $(this).closest('.modal-content').find('textarea.console').val();
-        trace(sdpValue);
-        const localSdp = await rtcController.acceptOffer(JSON.parse(sdpValue));
-        $('#sdp-content').text(JSON.stringify(localSdp));
-  
-        // highlight syntax
-        initHighlight('pre.language-sdp');
         $('#sdpInputModal').modal('hide');
+        trace(sdpValue);
+        rtcController.acceptOffer(JSON.parse(sdpValue));
+        rtcController.getLocalDescription().then(description => {
+          $('#sdp-content').text(JSON.stringify(description));
+          // highlight syntax
+          initHighlight('pre.language-sdp');
+        }).catch(trace);
       });
-      
-      rtcController = new RtcClientController({
-        streamingMediaElement: $('#receive-video')[0],
-        receivingMediaElement: $('#stream-video')[0]
+    
+      $('.chat-input').keypress(function (event){
+        if (event.which === 13){
+          const $this = $(this);
+          $('.chat-window').append(`<div>${$this.val()}</div>`);
+          rtcController.send({ message: $this.val() });
+          $this.val('');
+          event.preventDefault();
+          return false;
+        }
       });
-      rtcController.init();
       
       // focus on textarea
       $('#sdpInputModal').on('shown.bs.modal', function(event){
