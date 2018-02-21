@@ -1,12 +1,9 @@
 'use strict';
 
-let __traceIncrement = 1;
-
 export function trace(msg){
   console.log(msg);
   const $debugLog = $('.debug-log');
   $debugLog.append(`<div>${JSON.stringify(msg)}</div>`).scrollTop($debugLog[0].scrollHeight);
-  //console.log(`${__traceIncrement++}: ${msg}`);
 }
 
 export function getHashPath(hash){
