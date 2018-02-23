@@ -11,9 +11,9 @@ import { index } from "./controllers/index.js";
   
   const router = new Navigo(null, true, '#!');
   router.hooks({
-    /*before: (done, params) => {
-      done();
-    }*/
+    //before: (done, params) => {
+    //  done();
+    //}
     leave: function(params){
       if (rtcConfig.controller){
         rtcConfig.controller.close();

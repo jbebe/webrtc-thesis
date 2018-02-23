@@ -9,22 +9,24 @@
         <button type="button" class="btn btn-info btn-sm action-btn" id="add-sdp"
                 data-toggle="modal" data-target="#sdpInputModal">Add {{ user-type }}'s SDP Header</button>
     </div>
-    <div class="col-sm-12 col-md-6">
-        <pre class="console language-sdp" id="sdp-content"></pre>
-    </div>
-    <div class="col-sm-12 col-md-6">
-        <div class="row col-sm-12" style="height: 10rem">
-            <video id="receive-video" class="col-sm-6"></video>
-            <video id="stream-video" class="col-sm-6"></video>
+    <div class="col-12 row">
+        <div class="col-sm-12 col-md-6">
+            <pre class="console language-sdp" id="sdp-content"></pre>
         </div>
-        <div class="row col-sm-12">
-            <pre class="console col-sm-12 chat-window"></pre>
-        </div>
-        <div class="row col-sm-12">
-            <input type="file" name="files" class="col-sm-12 chat-file">
-        </div>
-        <div class="row col-sm-12">
-            <input class="col-sm-12 chat-input">
+        <div class="col-sm-12 col-md-6">
+            <div class="row col-12 video-container" style="height: 10rem">
+                <video id="receive-video" width="200" height="160" class="col-6" poster="img/avatar.png"></video>
+                <video id="stream-video" width="200" height="160" class="col-6" poster="img/avatar.png"></video>
+            </div>
+            <div class="row col-12">
+                <pre class="console col-sm-12 chat-window"></pre>
+            </div>
+            <div class="row col-12">
+                <input type="file" name="files" class="col-sm-12 chat-file">
+            </div>
+            <div class="row col-12">
+                <input class="col-sm-12 chat-input">
+            </div>
         </div>
     </div>
 </div>

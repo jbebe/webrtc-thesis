@@ -5,21 +5,27 @@ import { trace } from "../utils.js";
 export class RtcControllerBase {
   
   static get RtcConfig(){
-    return { 'iceServers': [] };
+    return {
+      'iceServers': [
+          { url:'stun:stun.ekiga.net' }
+        ]
+    };
   };
   
   constructor(options){
-    this.connection = new RTCPeerConnection(this.RtcConfig);
     this.dataChannel = null;
     this.receivingMediaElement = options.receivingMediaElement;
-    this.connection.onaddstream = this.onAddStream;
+    this.streamingMediaElement = options.streamingMediaElement;
+
     this.onMessage = options.onMessage;
     this.localDescription = null;
-    
+  
+    this.connection = new RTCPeerConnection(RtcControllerBase.RtcConfig);
+    this.connection.onaddstream = this.onAddStream;
     this.connection.onicecandidate = this.onIceCandidate.bind(this);
-    this.connection.onsignalingstatechange = trace;
-    this.connection.oniceconnectionstatechange = trace;
-    this.connection.onicegatheringstatechange = trace;
+    this.connection.onsignalingstatechange = RtcControllerBase.onConnectionAndSignalingAndGatheringStateChange;
+    this.connection.oniceconnectionstatechange = RtcControllerBase.onConnectionAndSignalingAndGatheringStateChange;
+    this.connection.onicegatheringstatechange = RtcControllerBase.onConnectionAndSignalingAndGatheringStateChange;
     this.connection.onaddstream = this.onAddStream.bind(this);
     this.connection.onconnection = trace;
     
@@ -27,6 +33,27 @@ export class RtcControllerBase {
     this.receiveBuffer = [];
     this.receivedSize = 0;
     this.onFileUploaded = options.onFileUploaded;
+    
+    // media
+    this.mediaConfig = options.mediaConfig;
+  }
+  
+  async initMedia(){
+    return new Promise((resolve, reject) => {
+      if (this.mediaConfig){
+        navigator.mediaDevices.getUserMedia(this.mediaConfig)
+          .then(stream =>{
+            this.streamingMediaElement.autoplay = true;
+            this.streamingMediaElement.srcObject = stream;
+            this.streamingMediaElement.play().catch(trace);
+            this.connection.addStream(stream);
+            resolve();
+          })
+          .catch(reject);
+      } else {
+        resolve();
+      }
+    });
   }
   
   send(data){
@@ -34,27 +61,45 @@ export class RtcControllerBase {
   }
   
   static onDataChannelOpen(event){
-    trace(event);
+    trace(
+      `DataChannel ${event.target.label}(${event.target.id}): ` +
+      `state: ${event.target.readyState}, type: ${event.target.binaryType}`
+    );
   }
   
-  static onDataChannelMessage(event){
-    trace(event);
+  onDataChannelMessage(event){
+    trace(event.data);
+    if (event.data.toString().includes('ArrayBuffer') || event.data === 'EOF'){
+      // receive file
+      this.onReceiveFile(event);
+    } else {
+      const data = JSON.parse(event.data);
+      if (data.type === 'file'){
+        // receive file
+      } else {
+        this.onMessage(data.message);
+      }
+    }
   }
   
   onIceCandidate(event){
     if (event.candidate === null){
+      trace('ICE candidate discovery finished');
+      trace('Filled local description is ready');
       this.localDescription = this.connection.localDescription;
-      trace(JSON.stringify(this.localDescription));
+    } else {
+      trace(`New ICE candidate: ${event.candidate.ip}/${event.candidate.protocol}`);
     }
   }
   
   async getLocalDescription(){
     return new Promise(resolve =>{
-      setInterval(() =>{
+      const intervalId = setInterval(() =>{
         if (this.localDescription !== null){
+          clearInterval(intervalId);
           resolve(this.localDescription);
         }
-      }, 1000/*ms*/);
+      }, 500/*ms*/);
     });
   }
   
@@ -124,6 +169,14 @@ export class RtcControllerBase {
   
       this.receivedSize = 0;
     }
+  }
+  
+  static onConnectionAndSignalingAndGatheringStateChange(event){
+    trace('ICE State: ' +
+      `signaling: ${event.target.signalingState}, ` +
+      `connection: ${event.target.iceConnectionState}, ` +
+      `gathering: ${event.target.iceGatheringState}`
+    );
   }
   
 }

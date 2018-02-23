@@ -23,7 +23,8 @@ export const joinChat = async (rtcConfig, router) => {
   
   // create copy sdp button
   const clipboard = new Clipboard('#copy-sdp');
-  clipboard.on('success', function(e){
+  clipboard.on('success', function(event){
+    event.clearSelection();
     const $copySdpBtn = $('#copy-sdp');
     $copySdpBtn
       .prop('title', 'Copied successfully!')
@@ -42,6 +43,12 @@ export const joinChat = async (rtcConfig, router) => {
     },
     onFileUploaded: options => {
       $('.chat-window').append(`<div><a href="${options.url}">${options.filename} (${options.bytes})</a></div>`);
+    },
+    mediaConfig: {
+      video: {
+        width: { max: 320 },
+        height: { max: 240 }
+      }
     }
   });
   rtcConfig.controller = rtcController;
@@ -51,10 +58,19 @@ export const joinChat = async (rtcConfig, router) => {
   $('.modal-accept-btn').click(async function(event){
     const sdpValue = $(this).closest('.modal-content').find('textarea.console').val();
     $('#sdpInputModal').modal('hide');
-    trace(sdpValue);
+    // handle cat loading
+    $('.language-sdp').css({
+      'background-image': "url('img/loading-sdp.gif')",
+      'background-color': '#e7dfdd',
+      'min-height': '11rem'
+    });
     rtcController.acceptOffer(JSON.parse(sdpValue));
     rtcController.getLocalDescription().then(description => {
-      $('#sdp-content').text(JSON.stringify(description));
+      const sdpContent = $('#sdp-content');
+      sdpContent.css({
+        'background': 'none'
+      });
+      sdpContent.text(JSON.stringify(description));
       // highlight syntax
       initHighlight('pre.language-sdp');
     }).catch(trace);

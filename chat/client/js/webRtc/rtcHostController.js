@@ -10,51 +10,34 @@ export class RtcHostController extends RtcControllerBase {
   //
   
   constructor(options){
-    /*options = {
-      streamingMediaElement: HTMLElement,
-      receivingMediaElement: HTMLElement
-    };*/
-    
     super(options);
-    this.options = options;
+    this.streamingMediaElement = options.streamingMediaElement;
   }
   
   async init(){
-    // media stream
-    navigator.mediaDevices.getUserMedia({ audio: false, video: true })
-      .then(stream =>{
-        // show media on screen
-        trace(this.options);
-        this.options.streamingMediaElement.autoplay = true;
-        this.options.streamingMediaElement.srcObject = stream;
-        this.options.streamingMediaElement.play().catch(trace);
-        this.connection.addStream(stream);
-        trace('#1 stream added to connection');
-      })
-      .then(() =>{
-        // init datachannel
-        this.initDataChannel();
-        trace('#2 data channel initialized');
-      })
-      .then(() =>{
-        // set local description
-        this.connection.createOffer({
-            optional: [],
-            mandatory: {
-              OfferToReceiveAudio: false,
-              OfferToReceiveVideo: true
-            }
-          })
-          .then(async sdpHeader =>{
-            this.connection.setLocalDescription(sdpHeader).catch(trace);
-            trace('#3 local description set');
-          })
-          .catch(trace);
-      });
+    return new Promise((resolve, reject) => {
+      this.initMedia()
+        .then(() =>{
+          // init datachannel
+          this.initDataChannel();
+        })
+        .then(() =>{
+          // set local description
+          this.connection.createOffer()
+            .then(async sdpHeader =>{
+              this.connection.setLocalDescription(sdpHeader).then(() => {
+                trace('Unfilled local description set');
+                resolve();
+              }).catch(reject);
+            })
+            .catch(reject);
+        })
+        .catch(reject);
+    });
   }
   
-  addRemoteDescription(sdpHeader){
-    this.connection.setRemoteDescription(sdpHeader).catch(trace);
+  addRemoteDescription(sdpObject){
+    this.connection.setRemoteDescription(sdpObject).catch(trace);
   }
   
   //
@@ -62,22 +45,10 @@ export class RtcHostController extends RtcControllerBase {
   //
   
   initDataChannel(){
-    this.dataChannel = this.connection.createDataChannel('data-channel-name', { reliable: true });
-    this.dataChannel.onopen = trace;
-    this.dataChannel.onmessage = event =>{
-      trace(`dataChannel message: ${event.data}`);
-      if (event.data.size){
-        // receive file
-      } else {
-        const data = JSON.parse(event.data);
-        if (data.type === 'file'){
-          // receive file
-        } else {
-          // update chat board
-          this.onMessage(event.data);
-        }
-      }
-    };
+    this.dataChannel = this.connection.createDataChannel('data-channel-name');
+    this.dataChannel.onopen = RtcHostController.onDataChannelOpen;
+    this.dataChannel.onmessage = this.onDataChannelMessage.bind(this);
+    trace('Data channel initialized');
   }
   
 }

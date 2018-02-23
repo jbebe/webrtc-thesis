@@ -4,7 +4,7 @@ import { RtcHostController } from "../webRtc/rtcHostController.js";
 
 'use strict';
 
-export const createChat = async (rtcConfig, router) => {
+export const createChat = async (rtcConfig, router) =>{
   const page = await getView('js/views/chat.html', router);
   
   // render view
@@ -24,6 +24,7 @@ export const createChat = async (rtcConfig, router) => {
   // create copy sdp button
   const clipboard = new Clipboard('#copy-sdp');
   clipboard.on('success', function(event){
+    event.clearSelection();
     const $copySdpBtn = $('#copy-sdp');
     $copySdpBtn
       .prop('title', 'Copied successfully!')
@@ -37,17 +38,28 @@ export const createChat = async (rtcConfig, router) => {
   const rtcController = new RtcHostController({
     streamingMediaElement: $('#receive-video')[0],
     receivingMediaElement: $('#stream-video')[0],
-    onMessage: message => {
+    onMessage: message =>{
       $('.chat-window').append(`<div>${message}</div>`);
     },
-    onFileUploaded: options => {
+    onFileUploaded: options =>{
       $('.chat-window').append(`<div><a href="${options.url}">${options.filename} (${options.bytes})</a></div>`);
+    },
+    mediaConfig: {
+      video: {
+        width: { max: 320 },
+        height: { max: 240 }
+      }
     }
   });
+  
   rtcConfig.controller = rtcController;
   rtcController.init().then(async () =>{
-    rtcController.getLocalDescription().then(description => {
-      $('#sdp-content').text(JSON.stringify(description));
+    rtcController.getLocalDescription().then(description =>{
+      const sdpContent = $('#sdp-content');
+      sdpContent.css({
+        'background': 'none'
+      });
+      sdpContent.text(JSON.stringify(description));
       // highlight syntax
       initHighlight('pre.language-sdp');
     }).catch(trace);
@@ -60,7 +72,7 @@ export const createChat = async (rtcConfig, router) => {
     $('#sdpInputModal').modal('hide');
   });
   
-  $('.chat-input').keypress(function (event){
+  $('.chat-input').keypress(function(event){
     if (event.which === 13){
       const $this = $(this);
       $('.chat-window').append(`<div>${$this.val()}</div>`);
@@ -77,10 +89,17 @@ export const createChat = async (rtcConfig, router) => {
   });
   
   // file share
-  $('.chat-file').change(event => {
+  $('.chat-file').change(event =>{
     const file = event.target.files[0];
     if (file !== undefined){
       rtcController.sendFile(file);
     }
+  });
+  
+  // handle cat loading
+  $('.language-sdp').css({
+    'background-image': "url('img/loading-sdp.gif')",
+    'background-color': '#e7dfdd',
+    'min-height': '11rem'
   });
 };

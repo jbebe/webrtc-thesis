@@ -76,6 +76,12 @@ pre.language-sdp::before {
     background: #eee;
 }
 
-video {
+#sdp-content {
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: contain;
+}
 
+.video-container {
+    margin-bottom: 1rem;
 }

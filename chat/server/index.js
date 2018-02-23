@@ -15,9 +15,9 @@ const root = path.join(process.cwd(), '..', 'client');
 app.use(express.static(root));
 console.log(`static root: ${root}`);
 
-app.listen(8000);
+app.listen(9000);
 
-https.createServer(options, app).listen(8080);
+https.createServer(options, app).listen(9090);
 
 /*
 chrome flags to run this on LAN:
