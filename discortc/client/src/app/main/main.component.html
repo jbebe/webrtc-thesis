@@ -1,3 +1,48 @@
-<p>
-  main works!
-</p>
+<div class="container">
+  <nav class="navbar navbar-expand-lg navbar-light">
+    <a class="navbar-brand" href="javascript:;">
+      <img src="../../assets/logo_c.png" class="banner">
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNavDropdown">
+      <div class="mr-auto mt-2 mt-lg-0"></div>
+      <ul class="navbar-nav my-2 my-lg-0">
+        <li class="nav-item">
+          <div class="btn-group dropleft">
+            <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              {{ chatDataService.nickname }}
+            </button>
+            <div class="dropdown-menu dropdown-menu-right">
+              <a class="dropdown-item" href="#">Action</a>
+              <a class="dropdown-item" href="#">Another action</a>
+              <a class="dropdown-item" href="#">Something else here</a>
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item" href="#">Separated link</a>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </nav>
+  <div class="row">
+    <div class="col col-3">
+      <ul class="list-group list-group-flush" style="padding:1rem">
+        <a href="#" class="list-group-item list-group-item-action">User</a>
+        <a href="#" class="list-group-item list-group-item-action">User</a>
+        <a href="#" class="list-group-item list-group-item-action">User</a>
+        <a href="#" class="list-group-item list-group-item-action">User</a>
+      </ul>
+    </div>
+    <div class="col col-9">
+      <div class="jumbotron jumbotron-fluid text-center" style="background-color:white">
+        <img src="../../assets/cat.png" width="100">
+        <h1 class="display-4">Welcome to DiscoRTC!</h1>
+        <p class="lead">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</p>
+        <hr class="my-4">
+        <p class="text-justify">Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source.</p>
+      </div>
+    </div>
+  </div>
+</div>
