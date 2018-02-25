@@ -1,0 +1,13 @@
+<div class="vertical-center" style="width: 100vw;">
+  <div class="card horizontal-center" style="width: 20rem; padding: 1rem">
+    <img class="card-img-top" alt="Card image cap" src="../../assets/logo_bw.png">
+    <div class="card-body">
+      <h5 class="card-title">Login</h5>
+      <p class="card-text">
+        <input class="name-input" placeholder="Your nickname" #nicknameInput [(ngModel)]="chatDataService.nickname"><br>
+        <small>Name must contain at least 4 characters out of the latin alphabet.</small>
+      </p>
+      <a *ngIf="validateName(nicknameInput.value)" href="javascript:;" (click)="enter()" class="btn btn-primary">Login as {{ chatDataService.nickname }}</a>
+    </div>
+  </div>
+</div>
