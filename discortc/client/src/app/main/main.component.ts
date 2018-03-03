@@ -14,9 +14,13 @@ export class MainComponent implements OnInit {
   ngOnInit() {
     this.socketService.initSocket();
     this.socketService.send("HELLO");
-    this.socketService.onMessage().(event) => {
-      console.log(event);
+    this.socketService.onMessage().subscribe((data) => {
+      console.log(data);
     });
+  }
+
+  ngOnDestroy(){
+    this.socketService.close();
   }
 
 }
