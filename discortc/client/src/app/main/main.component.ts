@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import {ChatDataService} from "../chat-data.service";
+import {ChatDataService} from "../services/chat-data.service";
+import {SocketService} from "../services/socket.service";
 
 @Component({
   selector: 'app-main',
@@ -8,9 +9,14 @@ import {ChatDataService} from "../chat-data.service";
 })
 export class MainComponent implements OnInit {
 
-  constructor(public chatDataService: ChatDataService) { }
+  constructor(public chatDataService: ChatDataService, private socketService: SocketService) { }
 
   ngOnInit() {
+    this.socketService.initSocket();
+    this.socketService.send("HELLO");
+    this.socketService.onMessage().(event) => {
+      console.log(event);
+    });
   }
 
 }

@@ -7,7 +7,7 @@ import { LoginComponent } from './login/login.component';
 import { FormsModule } from "@angular/forms";
 import { AppRoutingModule } from './app-routing.module';
 import { MainComponent } from './main/main.component';
-import { ChatDataService } from './chat-data.service';
+import { ChatDataService } from './services/chat-data.service';
 
 
 @NgModule({

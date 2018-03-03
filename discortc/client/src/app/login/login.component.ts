@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import {ChatDataService} from "../chat-data.service";
+import {ChatDataService} from "../services/chat-data.service";
 import {ActivatedRoute, Router} from '@angular/router';
 
 @Component({
@@ -16,6 +16,7 @@ export class LoginComponent implements OnInit {
     ) { }
 
   ngOnInit() {
+
   }
 
   public enter(){
