@@ -1,0 +1,5 @@
+{
+  "watch": ["src"],
+  "ext": "ts",
+  "exec": "node .\\node_modules\\gulp\\bin\\gulp.js build && node .\\dist\\index.js"
+}

@@ -37,7 +37,7 @@ var ChatServer = /** @class */ (function () {
                 _this.io.emit('message', m);
             });
             socket.on('disconnect', function () {
-                console.log('Client disconnected');
+                console.log('Client disconnected.');
             });
         });
     };
@@ -45,9 +45,10 @@ var ChatServer = /** @class */ (function () {
         return this.app;
     };
     ChatServer.prototype.serveStaticFiles = function () {
-        var root = path.join(process.cwd(), '..', '..', 'client', 'dist');
+        var root = path.join(process.cwd(), '..', 'client', 'dist');
         this.app.use(express.static(root));
         console.log("Serving static files at \"" + root + "\"");
+        this.app.all('/');
     };
     ChatServer.PORT = 80;
     return ChatServer;

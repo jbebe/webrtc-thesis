@@ -1,69 +1,100 @@
-import { createServer, Server } from 'http';
+import {createServer, Server} from 'http';
 import * as express from 'express';
 import * as socketIo from 'socket.io';
-
 import * as path from "path";
-import {hostname} from "os";
+import {ClientMessage, MessageType, ServerMessage, User} from "./types";
 
 export class ChatServer {
-    public static readonly PORT:number = 80;
-    private app: express.Application;
-    private server: Server;
-    private io: SocketIO.Server;
-    private port: string | number;
+  public static readonly PORT: number = 80;
+  private app: express.Application;
+  private server: Server;
+  private io: SocketIO.Server;
+  private port: string | number;
 
-    constructor() {
-        this.createApp();
-        this.config();
-        this.serveStaticFiles();
-        this.createServer();
-        this.sockets();
-        this.listen();
-    }
+  private users: User[];
 
-    private createApp(): void {
-        this.app = express();
-    }
+  constructor(){
+    this.users = [];
 
-    private createServer(): void {
-        this.server = createServer(this.app);
-    }
+    this.createApp();
+    this.config();
+    this.serveStaticFiles();
+    this.createServer();
+    this.sockets();
+    this.listen();
+  }
 
-    private config(): void {
-        this.port = ChatServer.PORT || process.env.PORT;
-    }
+  private createApp(): void{
+    this.app = express();
+  }
 
-    private sockets(): void {
-        this.io = socketIo(this.server);
-    }
+  private createServer(): void{
+    this.server = createServer(this.app);
+  }
 
-    private listen(): void {
-        this.server.listen(this.port, () => {
-            console.log('Running server on port %s', this.port);
-        });
+  private config(): void{
+    this.port = ChatServer.PORT || process.env.PORT;
+  }
 
-        this.io.on('connect', (socket: any) => {
-            console.log('Connected client on port %s.', this.port);
-            socket.on('message', (m: string) => {
-                console.log('[server](message): %s', m);
-                this.io.emit('message', m);
-            });
+  private sockets(): void{
+    this.io = socketIo(this.server);
+  }
 
-            socket.on('disconnect', () => {
-                console.log('Client disconnected');
-            });
-        });
-    }
+  private listen(): void{
+    this.server.listen(this.port, () =>{
+      console.log('WebSocket running on port %s', this.port);
+    });
 
-    public getApp(): express.Application {
-        return this.app;
-    }
+    this.io.on('connect', (socket: any) =>{
+      console.log('Connected client on port %s.', this.port);
 
-    private serveStaticFiles() {
-        const root: string = path.join(process.cwd(), '..', '..', 'client', 'dist');
-        this.app.use(express.static(root));
-        console.log(`Serving static files at "${root}"`);
+      socket.on('message', (m: ClientMessage) => {
+        console.log('Client -> Server: %s', m);
+        const isUsernameInList = (username: string) =>
+          this.users.some((user: User) => user.name == username);
+        switch (m.type) {
+          case MessageType.IsUsernameAlreadyInUse:
+            const content = String(isUsernameInList(m.content));
+            const userInUseResponse = new ServerMessage(MessageType.IsUsernameAlreadyInUse, content);
+            socket.emit('message', JSON.stringify(userInUseResponse));
+            break;
+          case MessageType.RegisterNewUser:
+            if (!isUsernameInList(m.content)){
+              this.users.push(new User(m.content, socket.id));
+            }
+            const newUserResponse = new ServerMessage(MessageType.NewUser, m.content);
+            socket.broadcast.emit('message', JSON.stringify(newUserResponse));
+            break;
+          case MessageType.GetUsers:
+            const usersResponse = new ServerMessage(MessageType.UserList, JSON.stringify(this.users));
+            socket.emit('message', JSON.stringify(usersResponse));
+            break;
+          case MessageType.InitiateSDPExchange:
+            if (isUsernameInList(m.content)){
+              // const recipient = this.users.)
+            }
+            break;
+          default:
+            throw new Error('Missing enum type or wrong client message type!');
+        }
+      });
 
-        this.app.all('/')
-    }
+      socket.on('disconnect', () =>{
+
+        console.log('Client disconnected.');
+      });
+    });
+  }
+
+  public getApp(): express.Application{
+    return this.app;
+  }
+
+  private serveStaticFiles(){
+    const root: string = path.join(process.cwd(), '..', 'client', 'dist');
+    this.app.use(express.static(root));
+    console.log(`Serving static files at "${root}"`);
+
+    this.app.all('/')
+  }
 }
