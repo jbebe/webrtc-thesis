@@ -2,7 +2,8 @@ import {createServer, Server} from 'http';
 import * as express from 'express';
 import * as socketIo from 'socket.io';
 import * as path from "path";
-import {ClientMessage, MessageType, ServerMessage, User} from "./types";
+import {TypedMessage, User} from "./types";
+import {MessageRouter} from "./chatServer";
 
 export class ChatServer {
   public static readonly PORT: number = 80;
@@ -41,6 +42,7 @@ export class ChatServer {
   }
 
   private listen(): void{
+
     this.server.listen(this.port, () =>{
       console.log('WebSocket running on port %s', this.port);
     });
@@ -48,35 +50,14 @@ export class ChatServer {
     this.io.on('connect', (socket: any) =>{
       console.log('Connected client on port %s.', this.port);
 
-      socket.on('message', (m: ClientMessage) => {
-        console.log('Client -> Server: %s', m);
-        const isUsernameInList = (username: string) =>
-          this.users.some((user: User) => user.name == username);
-        switch (m.type) {
-          case MessageType.IsUsernameAlreadyInUse:
-            const content = String(isUsernameInList(m.content));
-            const userInUseResponse = new ServerMessage(MessageType.IsUsernameAlreadyInUse, content);
-            socket.emit('message', JSON.stringify(userInUseResponse));
-            break;
-          case MessageType.RegisterNewUser:
-            if (!isUsernameInList(m.content)){
-              this.users.push(new User(m.content, socket.id));
-            }
-            const newUserResponse = new ServerMessage(MessageType.NewUser, m.content);
-            socket.broadcast.emit('message', JSON.stringify(newUserResponse));
-            break;
-          case MessageType.GetUsers:
-            const usersResponse = new ServerMessage(MessageType.UserList, JSON.stringify(this.users));
-            socket.emit('message', JSON.stringify(usersResponse));
-            break;
-          case MessageType.InitiateSDPExchange:
-            if (isUsernameInList(m.content)){
-              // const recipient = this.users.)
-            }
-            break;
-          default:
-            throw new Error('Missing enum type or wrong client message type!');
-        }
+      socket.on('message', (message: string) => {
+        console.log(`Client -> Server: ${message}`);
+        const clientMessage = JSON.parse(message) as TypedMessage;
+        const router = new MessageRouter(this.users, socket, clientMessage);
+        const onError = (...args: any[]) => {
+          throw new Error('Missing enum type or wrong client message type!');
+        };
+        (router[clientMessage.type] || onError)(this.users, socket, clientMessage);
       });
 
       socket.on('disconnect', () =>{

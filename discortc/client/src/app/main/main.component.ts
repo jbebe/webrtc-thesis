@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import {ChatDataService} from "../services/chat-data.service";
 import {SocketService} from "../services/socket.service";
+import {ClientMessage, MessageType} from "../socket.types";
 
 @Component({
   selector: 'app-main',
@@ -13,10 +14,16 @@ export class MainComponent implements OnInit {
 
   ngOnInit() {
     this.socketService.initSocket();
-    this.socketService.send("HELLO");
+
     this.socketService.onMessage().subscribe((data) => {
       console.log(data);
     });
+
+    const newClientMsg = new ClientMessage(MessageType.CreateNewUser, this.chatDataService.nickname);
+    this.socketService.send(JSON.stringify(newClientMsg));
+
+    const getUsersMsg = new ClientMessage(MessageType.GetUsers, null);
+    this.socketService.send(JSON.stringify(getUsersMsg));
   }
 
   ngOnDestroy(){

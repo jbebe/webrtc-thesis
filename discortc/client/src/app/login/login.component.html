@@ -3,7 +3,10 @@
     <img class="card-img-top" alt="Card image cap" src="../../assets/logo_bw.png">
     <div class="card-body">
       <h5 class="card-title">Login</h5>
-      <p class="card-text">
+      <div class="card-text">
+        <div *ngIf="[isNickNameInUse] === false" class="alert alert-danger" role="alert">
+          This nickname is already in use! Pick another one.
+        </div>
         <input
           class="name-input"
           placeholder="Your nickname"
@@ -12,7 +15,7 @@
           (keyup.enter)="enter()">
         <br>
         <small>Name must contain at least 4 characters out of the latin alphabet.</small>
-      </p>
+      </div>
       <a *ngIf="validateName(nameInput.value)"
          href="javascript:;"
          (click)="enter()"
