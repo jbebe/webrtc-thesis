@@ -10,18 +10,23 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var User = /** @class */ (function () {
-    function User(name, socket) {
-        if (socket === void 0) { socket = undefined; }
+var ClientUser = /** @class */ (function () {
+    function ClientUser(name) {
+        this.name = name;
+    }
+    return ClientUser;
+}());
+exports.ClientUser = ClientUser;
+var ServerUser = /** @class */ (function () {
+    function ServerUser(name, socket) {
         this.name = name;
         this.socket = socket;
     }
-    return User;
+    return ServerUser;
 }());
-exports.User = User;
+exports.ServerUser = ServerUser;
 var MessageType;
 (function (MessageType) {
-    // server side
     MessageType["UserList"] = "UserList";
     MessageType["NewUser"] = "NewUser";
     MessageType["IsUserNameUsed"] = "IsUserNameUsed";
@@ -52,23 +57,13 @@ var ServerMessage = /** @class */ (function (_super) {
     return ServerMessage;
 }(ClientMessage));
 exports.ServerMessage = ServerMessage;
-var SdpExchangeServerMessage = /** @class */ (function (_super) {
-    __extends(SdpExchangeServerMessage, _super);
-    function SdpExchangeServerMessage(type, sdpObject) {
-        var _this = _super.call(this, type) || this;
+var SdpExchangeMessage = /** @class */ (function (_super) {
+    __extends(SdpExchangeMessage, _super);
+    function SdpExchangeMessage(type, user, sdpObject) {
+        var _this = _super.call(this, type, user) || this;
         _this.sdpObject = sdpObject;
         return _this;
     }
-    return SdpExchangeServerMessage;
-}(TypedMessage));
-exports.SdpExchangeServerMessage = SdpExchangeServerMessage;
-var SdpExchangeClientMessage = /** @class */ (function (_super) {
-    __extends(SdpExchangeClientMessage, _super);
-    function SdpExchangeClientMessage(type, sdpObject, toUserName) {
-        var _this = _super.call(this, type, sdpObject) || this;
-        _this.toUserName = toUserName;
-        return _this;
-    }
-    return SdpExchangeClientMessage;
-}(SdpExchangeServerMessage));
-exports.SdpExchangeClientMessage = SdpExchangeClientMessage;
+    return SdpExchangeMessage;
+}(ClientMessage));
+exports.SdpExchangeMessage = SdpExchangeMessage;

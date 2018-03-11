@@ -2,7 +2,7 @@ import {createServer, Server} from 'http';
 import * as express from 'express';
 import * as socketIo from 'socket.io';
 import * as path from "path";
-import {TypedMessage, User} from "./types";
+import {TypedMessage, ServerUser} from "./types";
 import {MessageRouter} from "./chatServer";
 
 export class ChatServer {
@@ -12,7 +12,7 @@ export class ChatServer {
   private io: SocketIO.Server;
   private port: string | number;
 
-  private users: User[];
+  private users: ServerUser[];
 
   constructor(){
     this.users = [];

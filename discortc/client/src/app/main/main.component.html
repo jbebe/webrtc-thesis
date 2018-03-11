@@ -30,19 +30,33 @@
     <div class="col col-3">
       <ul class="list-group list-group-flush" style="padding:1rem">
         <a href="javascript:;" class="list-group-item list-group-item-action"
-           *ngFor="let user of chatDataService.users" (click)="enterRoom(user.name)"
-        >
+           *ngFor="let user of chatDataService.users" (click)="enterRoom(user.name)">
           {{ user.name }}
         </a>
       </ul>
     </div>
     <div class="col col-9">
-      <div class="jumbotron jumbotron-fluid text-center" style="background-color:white">
+      <div *ngIf="page == 'welcome'" class="jumbotron jumbotron-fluid text-center" style="background-color:white">
         <img src="../../assets/cat.png" width="100">
         <h1 class="display-4">Welcome to DiscoRTC!</h1>
         <p class="lead">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</p>
         <hr class="my-4">
         <p class="text-justify">Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source.</p>
+      </div>
+      <div *ngIf="page == 'chatwindow'">
+        <div class="row col-12" style="height: 10rem">
+          <video id="receive-video" width="200" height="160" class="col-6" poster="../../assets/avatar.png"></video>
+          <video id="stream-video" width="200" height="160" class="col-6" poster="../../assets/avatar.png"></video>
+        </div>
+        <div class="row col-12">
+          <pre class="console col-sm-12">{{ chatText }}</pre>
+        </div>
+        <div class="row col-12">
+          <input type="file" name="files" class="col-sm-12 chat-file">
+        </div>
+        <div class="row col-12">
+          <input [(ngModel)]="chatInput" (keyup.enter)="sendMessage()" class="col-sm-12 chat-input">
+        </div>
       </div>
     </div>
   </div>

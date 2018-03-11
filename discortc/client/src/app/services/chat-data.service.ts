@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
-import {User} from "../socket.types";
+import {ClientUser} from "../socket.types";
 import {Room} from "./chat-data.types";
 
 @Injectable()
 export class ChatDataService {
 
-  nickname: string = 'unknown';
-  users: User[] = [];
+  nickname: string;
+  users: ClientUser[] = [];
   rooms: Room[] = [];
 
   constructor() { }

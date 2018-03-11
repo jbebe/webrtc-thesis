@@ -1,9 +1,9 @@
-import {User} from "../socket.types";
+import {ClientUser} from "../socket.types";
 import * as Peer from 'simple-peer';
 
 export class RoomMember {
 
-  constructor(public user: User, public peerConnection: Peer){
+  constructor(public user: ClientUser, public peerConnection: Peer){
 
   }
 }

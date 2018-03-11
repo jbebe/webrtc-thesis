@@ -1,14 +1,20 @@
 
-export class User {
+export class ClientUser {
 
-  constructor(public name: string, public socket: any = undefined){
+  constructor(public name: string){
+
+  }
+}
+
+export class ServerUser {
+
+  constructor(public name: string, public socket: any){
 
   }
 }
 
 export enum MessageType {
 
-  // server side
   UserList = 'UserList',
   NewUser = 'NewUser',
   IsUserNameUsed = 'IsUserNameUsed',
@@ -33,16 +39,9 @@ export class ServerMessage extends ClientMessage {
 
 }
 
-export class SdpExchangeServerMessage extends  TypedMessage {
+export class SdpExchangeMessage extends ClientMessage {
 
-  constructor(type: MessageType, public sdpObject: Object){
-    super(type);
-  }
-}
-
-export class SdpExchangeClientMessage extends SdpExchangeServerMessage {
-
-  constructor(type: MessageType, sdpObject: Object, public toUserName: string){
-    super(type, sdpObject);
+  constructor(type: MessageType, user: string, public sdpObject: Object){
+    super(type, user);
   }
 }
