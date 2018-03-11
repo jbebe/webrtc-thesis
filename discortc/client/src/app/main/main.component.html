@@ -29,10 +29,11 @@
   <div class="row">
     <div class="col col-3">
       <ul class="list-group list-group-flush" style="padding:1rem">
-        <a href="#" class="list-group-item list-group-item-action">User</a>
-        <a href="#" class="list-group-item list-group-item-action">User</a>
-        <a href="#" class="list-group-item list-group-item-action">User</a>
-        <a href="#" class="list-group-item list-group-item-action">User</a>
+        <a href="javascript:;" class="list-group-item list-group-item-action"
+           *ngFor="let user of chatDataService.users" (click)="enterRoom(user.name)"
+        >
+          {{ user.name }}
+        </a>
       </ul>
     </div>
     <div class="col col-9">

@@ -54,15 +54,21 @@ export class ChatServer {
         console.log(`Client -> Server: ${message}`);
         const clientMessage = JSON.parse(message) as TypedMessage;
         const router = new MessageRouter(this.users, socket, clientMessage);
-        const onError = (...args: any[]) => {
+        const onError = () => {
           throw new Error('Missing enum type or wrong client message type!');
         };
-        (router[clientMessage.type] || onError)(this.users, socket, clientMessage);
+        (router[clientMessage.type] || onError).call(router);
       });
 
       socket.on('disconnect', () =>{
 
         console.log('Client disconnected.');
+        for (let i = 0; i < this.users.length; ++i){
+          if (this.users[i].socket.id === socket.id){
+            this.users.splice(i, 1);
+            break;
+          }
+        }
       });
     });
   }

@@ -12,6 +12,7 @@ import {ClientMessage, MessageType, ServerMessage, TypedMessage} from "../socket
 export class LoginComponent implements OnInit {
 
   public isNickNameInUse;
+  private loginHappening = false;
 
   constructor(
     public chatDataService: ChatDataService,
@@ -25,14 +26,21 @@ export class LoginComponent implements OnInit {
   }
 
   public enter(){
+    if (this.loginHappening){
+      return;
+    } else {
+      this.loginHappening = true;
+    }
     const userNameHandler = (message: string) => {
       const serverMessage = JSON.parse(message) as ServerMessage;
       if (serverMessage.type === MessageType.IsUserNameUsed){
-        console.log(`Server says nickname is: ${serverMessage.content}`);
+        console.log(`Is nickname used: ${serverMessage.content}`);
         this.isNickNameInUse = serverMessage.content;
         if (!this.isNickNameInUse){
           this.socketService.unsubscribeMessage(userNameHandler);
           this.router.navigate(['main'], {}).catch(console.log);
+        } else {
+          this.loginHappening = false;
         }
       }
     };

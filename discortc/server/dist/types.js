@@ -12,6 +12,7 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var User = /** @class */ (function () {
     function User(name, socket) {
+        if (socket === void 0) { socket = undefined; }
         this.name = name;
         this.socket = socket;
     }
@@ -21,13 +22,10 @@ exports.User = User;
 var MessageType;
 (function (MessageType) {
     // server side
-    MessageType["GetUsers"] = "GetUsers";
-    MessageType["CreateNewUser"] = "CreateNewUser";
+    MessageType["UserList"] = "UserList";
+    MessageType["NewUser"] = "NewUser";
     MessageType["IsUserNameUsed"] = "IsUserNameUsed";
     MessageType["SDPExchange"] = "SDPExchange";
-    // client side
-    MessageType["NotifyNewUser"] = "NotifyNewUser";
-    MessageType["UserList"] = "UserList";
 })(MessageType = exports.MessageType || (exports.MessageType = {}));
 var TypedMessage = /** @class */ (function () {
     function TypedMessage(type) {

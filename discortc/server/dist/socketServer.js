@@ -39,16 +39,18 @@ var ChatServer = /** @class */ (function () {
                 var clientMessage = JSON.parse(message);
                 var router = new chatServer_1.MessageRouter(_this.users, socket, clientMessage);
                 var onError = function () {
-                    var args = [];
-                    for (var _i = 0; _i < arguments.length; _i++) {
-                        args[_i] = arguments[_i];
-                    }
                     throw new Error('Missing enum type or wrong client message type!');
                 };
-                (router[clientMessage.type] || onError)(_this.users, socket, clientMessage);
+                (router[clientMessage.type] || onError).call(router);
             });
             socket.on('disconnect', function () {
                 console.log('Client disconnected.');
+                for (var i = 0; i < _this.users.length; ++i) {
+                    if (_this.users[i].socket.id === socket.id) {
+                        _this.users.splice(i, 1);
+                        break;
+                    }
+                }
             });
         });
     };

@@ -7,8 +7,10 @@ var MessageRouter = /** @class */ (function () {
         this.socket = socket;
         this.message = message;
     }
-    MessageRouter.prototype.GetUsers = function () {
-        var usersResponse = new types_1.ServerMessage(types_1.MessageType.UserList, JSON.stringify(this.users));
+    MessageRouter.prototype.UserList = function () {
+        var users = this.users.map(function (u) { return ({ name: u.name }); });
+        var usersResponse = new types_1.ServerMessage(types_1.MessageType.UserList, users);
+        console.log("Server -> Client: " + JSON.stringify(users));
         this.socket.emit('message', JSON.stringify(usersResponse));
     };
     MessageRouter.prototype.SDPExchange = function () {
@@ -16,16 +18,18 @@ var MessageRouter = /** @class */ (function () {
         var user = MessageRouter.getUserBySocketId(this.socket.id, this.users);
         if (user !== undefined) {
             var recipient = MessageRouter.getUserByName(message.toUserName, this.users);
+            console.log("Server -> Client: <SDP Header>");
             recipient.socket.emit('message', JSON.stringify(new types_1.SdpExchangeServerMessage(types_1.MessageType.SDPExchange, message.sdpObject)));
         }
     };
-    MessageRouter.prototype.CreateNewUser = function () {
+    MessageRouter.prototype.NewUser = function () {
         var message = this.message;
         var user = MessageRouter.getUserBySocketId(this.socket.id, this.users);
         if (user === undefined) {
             this.users.push(new types_1.User(message.content, this.socket));
             // warn others
-            var newUserResponse = new types_1.ServerMessage(types_1.MessageType.NotifyNewUser, message.content);
+            var newUserResponse = new types_1.ServerMessage(types_1.MessageType.NewUser, message.content);
+            console.log("Server -> Client[]: " + message.content);
             this.socket.broadcast.emit('message', JSON.stringify(newUserResponse));
         }
     };
@@ -33,6 +37,7 @@ var MessageRouter = /** @class */ (function () {
         var message = this.message;
         var content = MessageRouter.isUsernameInList(message.content, this.users);
         var userInUseResponse = new types_1.ServerMessage(types_1.MessageType.IsUserNameUsed, content);
+        console.log("Server -> Client: " + content);
         this.socket.emit('message', JSON.stringify(userInUseResponse));
     };
     MessageRouter.getUserBySocketId = function (socketId, users) {
@@ -54,7 +59,7 @@ var MessageRouter = /** @class */ (function () {
         return undefined;
     };
     MessageRouter.isUsernameInList = function (username, users) {
-        users.some(function (user) { return user.name == username; });
+        return users.some(function (user) { return user.name == username; });
     };
     return MessageRouter;
 }());

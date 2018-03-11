@@ -1,7 +1,7 @@
 
 export class User {
 
-  constructor(public name: string, public socket: any){
+  constructor(public name: string, public socket: any = undefined){
 
   }
 }
@@ -9,14 +9,10 @@ export class User {
 export enum MessageType {
 
   // server side
-  GetUsers = 'GetUsers',
-  CreateNewUser = 'CreateNewUser',
+  UserList = 'UserList',
+  NewUser = 'NewUser',
   IsUserNameUsed = 'IsUserNameUsed',
   SDPExchange = 'SDPExchange',
-
-  // client side
-  NotifyNewUser = 'NotifyNewUser',
-  UserList = 'UserList',
 }
 
 export class TypedMessage {

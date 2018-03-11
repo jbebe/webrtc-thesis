@@ -4,7 +4,7 @@
     <div class="card-body">
       <h5 class="card-title">Login</h5>
       <div class="card-text">
-        <div *ngIf="[isNickNameInUse] === false" class="alert alert-danger" role="alert">
+        <div *ngIf="isNickNameInUse" class="alert alert-danger" role="alert">
           This nickname is already in use! Pick another one.
         </div>
         <input
@@ -12,7 +12,9 @@
           placeholder="Your nickname"
           #nameInput
           [(ngModel)]="chatDataService.nickname"
-          (keyup.enter)="enter()">
+          (keyup.enter)="enter()"
+          [disabled]="loginHappening"
+        >
         <br>
         <small>Name must contain at least 4 characters out of the latin alphabet.</small>
       </div>
