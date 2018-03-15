@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import {ChatDataService} from "../services/chat-data.service";
 import {ActivatedRoute, Router} from '@angular/router';
 import {SocketService} from "../services/socket.service";
-import {ClientMessage, MessageType, ServerMessage, TypedMessage} from "../socket.types";
+import {MessageType, IsUserNameUsedRequest, IsUserNameUsedResponse} from "../../../../common/src/types";
 
 @Component({
   selector: 'app-login',
@@ -32,10 +32,10 @@ export class LoginComponent implements OnInit {
       this.loginHappening = true;
     }
     const userNameHandler = (message: string) => {
-      const serverMessage = JSON.parse(message) as ServerMessage;
+      const serverMessage = JSON.parse(message) as IsUserNameUsedResponse;
       if (serverMessage.type === MessageType.IsUserNameUsed){
-        console.log(`Is nickname used: ${serverMessage.content}`);
-        this.isNickNameInUse = serverMessage.content;
+        console.log(`Is nickname used: ${serverMessage.isUsed}`);
+        this.isNickNameInUse = serverMessage.isUsed;
         if (!this.isNickNameInUse){
           this.socketService.unsubscribeMessage(userNameHandler);
           this.router.navigate(['main'], {}).catch(console.log);
@@ -45,7 +45,7 @@ export class LoginComponent implements OnInit {
       }
     };
     this.socketService.onMessage().subscribe(userNameHandler, (error: any) => { throw new Error(error); });
-    this.socketService.send(JSON.stringify(new ClientMessage(MessageType.IsUserNameUsed, this.chatDataService.nickname)));
+    this.socketService.send(JSON.stringify(new IsUserNameUsedRequest(this.chatDataService.nickname)));
   }
 
   // noinspection JSMethodCanBeStatic

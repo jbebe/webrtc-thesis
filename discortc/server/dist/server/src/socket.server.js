@@ -4,8 +4,10 @@ var http_1 = require("http");
 var express = require("express");
 var socketIo = require("socket.io");
 var path = require("path");
+var chat_server_1 = require("./chat.server");
 var ChatServer = /** @class */ (function () {
     function ChatServer() {
+        this.users = [];
         this.createApp();
         this.config();
         this.serveStaticFiles();
@@ -28,16 +30,31 @@ var ChatServer = /** @class */ (function () {
     ChatServer.prototype.listen = function () {
         var _this = this;
         this.server.listen(this.port, function () {
-            console.log('Running server on port %s', _this.port);
+            console.log('WebSocket running on port %s', _this.port);
         });
         this.io.on('connect', function (socket) {
             console.log('Connected client on port %s.', _this.port);
-            socket.on('message', function (m) {
-                console.log('[server](message): %s', m);
-                _this.io.emit('message', m);
+            socket.on('message', function (message) {
+                try {
+                    var clientMessage = JSON.parse(message);
+                    var router = new chat_server_1.MessageRouter(_this.users, socket, clientMessage);
+                    var onError = function () {
+                        throw new Error('Missing enum type or wrong message type!');
+                    };
+                    (router[clientMessage.type] || onError).call(router);
+                }
+                catch (err) {
+                    console.log("[ERROR]: " + JSON.parse(err));
+                }
             });
             socket.on('disconnect', function () {
                 console.log('Client disconnected.');
+                for (var i = 0; i < _this.users.length; ++i) {
+                    if (_this.users[i].socket.id === socket.id) {
+                        _this.users.splice(i, 1);
+                        break;
+                    }
+                }
             });
         });
     };

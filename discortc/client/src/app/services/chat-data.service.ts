@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
-import {ClientUser} from "../socket.types";
+import {User} from "../chat.types";
 import {Room} from "./chat-data.types";
 
 @Injectable()
 export class ChatDataService {
 
   nickname: string;
-  users: ClientUser[] = [];
+  users: User[] = [];
   rooms: Room[] = [];
 
   constructor() { }
@@ -18,7 +18,15 @@ export class ChatDataService {
         return user;
       }
     }
-    return undefined;
+    return null;
+  }
+
+  getChatRoom(userName: string){
+    return this.rooms.find(
+      (room) => room.members.some(
+        (member) => member.user.name === userName
+      )
+    );
   }
 
 }

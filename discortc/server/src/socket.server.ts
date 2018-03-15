@@ -2,8 +2,9 @@ import {createServer, Server} from 'http';
 import * as express from 'express';
 import * as socketIo from 'socket.io';
 import * as path from "path";
-import {TypedMessage, ServerUser} from "./types";
-import {MessageRouter} from "./chatServer";
+import {TypedMessage} from "./../../common/src/types";
+import {MessageRouter} from "./chat.server";
+import {User} from "./chat.types";
 
 export class ChatServer {
   public static readonly PORT: number = 80;
@@ -12,7 +13,7 @@ export class ChatServer {
   private io: SocketIO.Server;
   private port: string | number;
 
-  private users: ServerUser[];
+  private users: User[];
 
   constructor(){
     this.users = [];
@@ -51,13 +52,16 @@ export class ChatServer {
       console.log('Connected client on port %s.', this.port);
 
       socket.on('message', (message: string) => {
-        console.log(`Client -> Server: ${message}`);
-        const clientMessage = JSON.parse(message) as TypedMessage;
-        const router = new MessageRouter(this.users, socket, clientMessage);
-        const onError = () => {
-          throw new Error('Missing enum type or wrong client message type!');
-        };
-        (router[clientMessage.type] || onError).call(router);
+        try {
+          const clientMessage = JSON.parse(message) as TypedMessage;
+          const router = new MessageRouter(this.users, socket, clientMessage);
+          const onError = () =>{
+            throw new Error('Missing enum type or wrong message type!');
+          };
+          (router[clientMessage.type] || onError).call(router);
+        } catch (err){
+          console.log(`[ERROR]: ${JSON.parse(err)}`);
+        }
       });
 
       socket.on('disconnect', () =>{

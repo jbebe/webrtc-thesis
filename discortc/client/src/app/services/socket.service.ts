@@ -8,7 +8,7 @@ const SERVER_URL = 'http://127.0.0.1:80';
 @Injectable()
 export class SocketService {
 
-  public socket;
+  public socket: SocketIOClient.Socket;
 
   public initSocket(): void {
     if (!this.socket) {
@@ -24,7 +24,7 @@ export class SocketService {
     return this.socket.off('message', fn);
   }
 
-  public unsubscribe(event: Event, fn?: Function): Emitter {
+  public unsubscribe(event: string, fn?: Function): Emitter {
     return this.socket.off(event, fn);
   }
 
@@ -34,7 +34,7 @@ export class SocketService {
     });
   }
 
-  public onEvent(event: Event): Observable<any> {
+  public onEvent(event: string): Observable<any> {
     return new Observable<Event>(observer => {
       this.socket.on(event, () => observer.next());
     });
