@@ -12,7 +12,7 @@ import {MessageType, IsUserNameUsedRequest, IsUserNameUsedResponse} from "../../
 export class LoginComponent implements OnInit {
 
   public isNickNameInUse;
-  private loginHappening = false;
+  public loginHappening = false;
 
   constructor(
     public chatDataService: ChatDataService,

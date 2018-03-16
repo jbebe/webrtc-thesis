@@ -60,7 +60,7 @@ export class ChatServer {
           };
           (router[clientMessage.type] || onError).call(router);
         } catch (err){
-          console.log(`[ERROR]: ${JSON.parse(err)}`);
+          console.log(`[ERROR]: ${JSON.stringify(err)}`);
         }
       });
 

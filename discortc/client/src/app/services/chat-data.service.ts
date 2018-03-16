@@ -48,7 +48,7 @@ export class ChatDataService {
   ){
     const peer = new Peer({
       initiator: isInitiator,
-      trickle: true,
+      trickle: false,
       config: {
         iceServers: [
           {urls: ['stun:tudor.sch.bme.hu:80'/*, 'turn:tudor.sch.bme.hu'*/]}

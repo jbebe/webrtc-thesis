@@ -37,6 +37,7 @@ export class MainComponent implements OnInit {
   //
 
   enterRoom(recipientName: string){
+    this.isReadyToChat = false;
     this.showRoom(Room.Empty);
     const room = this.chatDataService.getChatRoom(recipientName);
     if (!room) {
