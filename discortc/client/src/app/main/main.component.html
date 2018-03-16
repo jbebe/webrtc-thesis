@@ -49,7 +49,9 @@
           <video id="stream-video" width="200" height="160" class="col-6" poster="../../assets/avatar.png"></video>
         </div>
         <div class="row col-12">
-          <pre class="console col-sm-12">{{ chatText }}</pre>
+          <div class="chat-content col-sm-12">
+            <p *ngFor="let message of activeChatRoom.messages"><b>{{ message.user.name }}:</b> {{ message.content }} <small>({{ message.timestamp }})</small></p>
+          </div>
           <img *ngIf="!isReadyToChat" src="../../assets/loading.gif">
         </div>
         <div class="row col-12">
