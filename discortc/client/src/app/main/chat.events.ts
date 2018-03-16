@@ -14,7 +14,8 @@ export class ChatEvents {
   constructor(private chatDataService: ChatDataService,
               private socketService: SocketService,
               private message: TypedMessage,
-              private onReady: Function){
+              private onReady: Function,
+              private onMessage: Function){
   }
 
   UserList(){
@@ -47,14 +48,18 @@ export class ChatEvents {
     } else {
       // new call, we have to accept the peer offer and create a room
       console.log('Create new peer on request.');
-      this.chatDataService.createRoom(senderUser, false, this.onReady, sdpMsg);
+      this.chatDataService.createRoom(senderUser, false, this.onReady, this.onMessage, sdpMsg);
     }
   }
 
   NewUser(){
-    this.chatDataService.users.push(
-      new User((this.message as NewUserMessage).userName)
-    );
+    const newUserMsg = this.message as NewUserMessage;
+    const isLocallyNewUser = this.chatDataService.getUser(newUserMsg.userName) === null;
+    if (isLocallyNewUser){
+      this.chatDataService.users.push(
+        new User(newUserMsg.userName)
+      );
+    }
   }
 
 }

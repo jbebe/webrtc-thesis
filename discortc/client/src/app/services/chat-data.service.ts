@@ -18,13 +18,13 @@ export class ChatDataService {
   nickname: string;
   users: User[] = [];
   rooms: Room[] = [];
+  activeChatRoom: Room;
 
   constructor(private socketService: SocketService) { }
 
-  getUser(remoteUser?: string){
-    const username = remoteUser || this.nickname;
+  getUser(remoteUser: string){
     for (const user of this.users){
-      if (user.name === username){
+      if (user.name === remoteUser){
         return user;
       }
     }
@@ -39,7 +39,13 @@ export class ChatDataService {
     );
   }
 
-  createRoom(remoteUser: User, isInitiator: boolean, onReady: Function, sdpMsg: SdpExchangeResponse = null){
+  createRoom(
+    remoteUser: User,
+    isInitiator: boolean,
+    onReady: Function,
+    onMessage: Function,
+    sdpMsg: SdpExchangeResponse = null
+  ){
     const peer = new Peer({
       initiator: isInitiator,
       trickle: true,
@@ -68,8 +74,9 @@ export class ChatDataService {
       console.log(`[ERROR]: ${err}`);
     });
     peer.on('data', function (data){
-      room.messages.push(new Message(remoteUser, data));
-      console.log('data: ' + data)
+      room.messages.push(new Message(remoteUser, data, null, room === this.activeChatRoom));
+      console.log('data: ' + data);
+      onMessage(remoteRoomMember, room);
     });
     peer.on('stream', function (stream){
       console.log('Stream arrived!');
@@ -84,7 +91,7 @@ export class ChatDataService {
     }
   }
 
-  init(onReady: Function){
+  init(onReady: Function, onMessage: Function){
     this.socketService.initSocket();
 
     this.socketService.onMessage().subscribe((data) =>{
@@ -92,7 +99,7 @@ export class ChatDataService {
         console.log(`SERVER -> CLIENT: ${data.substr(0, 80)}`);
         const message = JSON.parse(data) as TypedMessage;
         const chatActions =
-          new ChatEvents(this, this.socketService, message, onReady);
+          new ChatEvents(this, this.socketService, message, onReady, onMessage);
         const onError = () =>{
           throw new Error('Missing enum type or wrong message type!');
         };
@@ -113,6 +120,14 @@ export class ChatDataService {
 
     const getUsersMsg = new UserListRequest();
     this.socketService.send(JSON.stringify(getUsersMsg));
+  }
+
+  getRoom(username: string): Room {
+    return this.rooms.find(
+      (room) => room.members.some(
+        (member) => member.user.name === username
+      )
+    );
   }
 }
 

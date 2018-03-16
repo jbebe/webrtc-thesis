@@ -1,6 +1,6 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, ApplicationRef} from '@angular/core';
 import {ChatDataService} from "../services/chat-data.service";
-import {Room, RoomMember, User} from "../services/chat-data.types";
+import {Message, Room, RoomMember, User} from "../services/chat-data.types";
 
 @Component({
   selector: 'app-main',
@@ -12,10 +12,9 @@ export class MainComponent implements OnInit {
   chatText = '';
   chatInput = '';
 
-  activeChatRoom: Room;
   isReadyToChat: boolean = false;
 
-  constructor(public chatDataService: ChatDataService){
+  constructor(public chatDataService: ChatDataService, private app: ApplicationRef){
   }
 
   //
@@ -42,9 +41,11 @@ export class MainComponent implements OnInit {
     const room = this.chatDataService.getChatRoom(recipientName);
     if (!room) {
       const remoteUser = this.chatDataService.getUser(recipientName);
-      this.chatDataService.createRoom(remoteUser, true, this.loadRoomData.bind(this));
+      this.chatDataService.createRoom(remoteUser, true, this.loadRoomData.bind(this), () => {
+        console.log('New message! TICK!');
+        this.app.tick();
+      });
     } else {
-      // TODO: ongoing conversation
       const roomMember = room.members.find((member) => member.user.name === recipientName);
       this.loadRoomData(roomMember, room);
     }
@@ -53,8 +54,37 @@ export class MainComponent implements OnInit {
   sendMessage(){
     const message = this.chatInput;
     console.log(message);
-    this.activeChatRoom.sendMessage(this.currentUser, message);
+    this.chatDataService.activeChatRoom.sendMessage(this.currentUser, message);
     this.chatInput = '';
+  }
+
+  isUserActive(username: string): Object {
+    let activeClassObj = {
+      'active': false
+    };
+    if (!!this.chatDataService.activeChatRoom){
+      activeClassObj.active = this.chatDataService.activeChatRoom.members.some(
+        (member) => member.user.name === username
+      );
+    }
+    return activeClassObj;
+  }
+
+  isNewMessagePresent(username: string): boolean {
+    return this.getNewMessageCount(username) > 0;
+  }
+
+
+  getNewMessageCount(username: string): number {
+    const room = this.chatDataService.getRoom(username);
+    if (room){
+      const messageCount = room.messages.reduce((all: number, curr: Message) => all + (curr.seen ? 0 : 1), 0);
+      console.log(`messages for ${username}: ${messageCount} pcs`);
+      return messageCount;
+    } else {
+      console.log(`Cannot find room by username: ${username}`);
+      return 0;
+    }
   }
 
   //
@@ -63,8 +93,9 @@ export class MainComponent implements OnInit {
 
   private initChatServer(){
     this.chatDataService.init((roomMember, room) =>{
-      this.isReadyToChat = true;
-      this.activeChatRoom = room;
+      // do i have to warn someone about a new message here?
+    }, (roomMember, room) => {
+      this.app.tick();
     });
   }
 
@@ -74,7 +105,8 @@ export class MainComponent implements OnInit {
 
   private showRoom(room: Room){
     console.log(room);
-    this.activeChatRoom = room;
+    this.chatDataService.activeChatRoom = room;
+    room.messages.forEach((message: Message) => message.seen = true);
   }
 
   private loadRoomData(recipientMember: RoomMember, room: Room){

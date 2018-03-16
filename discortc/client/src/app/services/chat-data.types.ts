@@ -11,7 +11,11 @@ export class RoomMember {
 }
 
 export class Message {
-  constructor(public user: User, public content: string, private _timestamp: Date = null){
+  constructor(
+    public user: User,
+    public content: string,
+    private _timestamp: Date = null,
+    public seen: boolean = false){
     this._timestamp = this._timestamp || new Date();
   }
 
@@ -32,6 +36,6 @@ export class Room {
     this.members.forEach((member) => {
       member.peerConnection.send(chatInput);
     });
-    this.messages.push(new Message(currentUser, chatInput));
+    this.messages.push(new Message(currentUser, chatInput, null, true));
   }
 }
