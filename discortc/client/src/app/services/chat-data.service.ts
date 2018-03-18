@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import {ElementRef, Injectable} from '@angular/core';
 import {Message, Room, RoomMember, User} from "./chat-data.types";
 import * as Peer from 'simple-peer';
 import {
@@ -19,6 +19,10 @@ export class ChatDataService {
   users: User[] = [];
   rooms: Room[] = [];
   activeChatRoom: Room;
+
+  streamVideo: any;
+  receiveVideo: any;
+  localStream: any;
 
   constructor(private socketService: SocketService) { }
 
@@ -46,49 +50,67 @@ export class ChatDataService {
     onMessage: Function,
     sdpMsg: SdpExchangeResponse = null
   ){
-    const peer = new Peer({
-      initiator: isInitiator,
-      trickle: true,
-      config: {
-        iceServers: [
-          {urls: ['stun:tudor.sch.bme.hu:8080'/*, 'turn:tudor.sch.bme.hu'*/]}
-        ]
-      },
-    });
+    const gotMedia = (stream) => {
+      this.localStream = stream;
+      const peer = new Peer({
+        initiator: isInitiator,
+        trickle: true,
+        config: {
+          iceServers: [
+            {urls: ['stun:tudor.sch.bme.hu:8080'/*, 'turn:tudor.sch.bme.hu'*/]}
+          ]
+        },
+        stream: stream
+      });
+      const remoteRoomMember = new RoomMember(remoteUser, peer);
+      const room = new Room([remoteRoomMember]);
+      this.rooms.push(room);
 
-    const remoteRoomMember = new RoomMember(remoteUser, peer);
-    const room = new Room([remoteRoomMember]);
-    this.rooms.push(room);
-    const onSignal = (sdpHeader) => {
-      console.log('SDP arrived from server.');
-      if (!peer.connected) {
-        const sdpExchangeMsg = JSON.stringify(
-          new SdpExchangeRequest(remoteUser.name, sdpHeader)
-        );
-        console.log(`CLIENT -> SERVER: ${sdpExchangeMsg.substr(0, 80)}`);
-        this.socketService.send(sdpExchangeMsg);
+      if (this.streamVideo !== undefined && this.streamVideo.srcObject === undefined){
+        this.streamVideo.srcObject = stream;
+        this.streamVideo.play();
+      }
+
+      const onSignal = (sdpHeader) =>{
+        console.log('SDP arrived from server.');
+        if (!peer.connected) {
+          const sdpExchangeMsg = JSON.stringify(
+            new SdpExchangeRequest(remoteUser.name, sdpHeader)
+          );
+          console.log(`CLIENT -> SERVER: ${sdpExchangeMsg.substr(0, 80)}`);
+          this.socketService.send(sdpExchangeMsg);
+        }
+      };
+      peer.on('signal', onSignal);
+      peer.on('error', (err) =>{
+        console.log(`[ERROR]: ${err}`);
+      });
+      peer.on('data', (data) => {
+        room.messages.push(new Message(remoteUser, data, null, room === this.activeChatRoom));
+        console.log('data: ' + data);
+        onMessage(remoteRoomMember, room);
+      });
+      peer.on('stream', (stream) => {
+        console.log('Stream arrived!');
+        if (this.receiveVideo){
+          this.receiveVideo.srcObject = stream;
+          this.receiveVideo.play();
+        } else {
+          remoteRoomMember.stream = stream;
+        }
+      });
+      peer.on('connect', () =>{
+        peer.removeListener('signal', onSignal);
+        console.log('Peer connected.');
+        onReady(remoteRoomMember, room);
+      });
+      if (!isInitiator) {
+        peer.signal(sdpMsg.sdpObject);
       }
     };
-    peer.on('signal', onSignal);
-    peer.on('error', (err) => {
-      console.log(`[ERROR]: ${err}`);
+    navigator.getUserMedia({ video: true, audio: false }, gotMedia, (error) => {
+      console.log(error);
     });
-    peer.on('data', function (data){
-      room.messages.push(new Message(remoteUser, data, null, room === this.activeChatRoom));
-      console.log('data: ' + data);
-      onMessage(remoteRoomMember, room);
-    });
-    peer.on('stream', function (stream){
-      console.log('Stream arrived!');
-    });
-    peer.on('connect', () => {
-      peer.removeListener('signal', onSignal);
-      console.log('Peer connected.');
-      onReady(remoteRoomMember, room);
-    });
-    if (!isInitiator){
-      peer.signal(sdpMsg.sdpObject);
-    }
   }
 
   init(onReady: Function, onMessage: Function){
@@ -128,6 +150,13 @@ export class ChatDataService {
         (member) => member.user.name === username
       )
     );
+  }
+
+  addVideoElements(streamVideo: any, receiveVideo: any){
+    if (!this.streamVideo || !this.receiveVideo){
+      this.streamVideo = streamVideo;
+      this.receiveVideo = receiveVideo;
+    }
   }
 }
 

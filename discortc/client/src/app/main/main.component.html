@@ -47,15 +47,17 @@
         <p class="text-justify">Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source.</p>
       </div>
       <div *ngIf="!!chatDataService.activeChatRoom">
-        <div class="row col-12" style="height: 10rem;display:none;">
-          <video id="receive-video" width="200" height="160" class="col-6" poster="../../assets/avatar.png"></video>
-          <video id="stream-video" width="200" height="160" class="col-6" poster="../../assets/avatar.png"></video>
-        </div>
-        <div class="row col-12" style="height: 23rem;margin-top: 1rem;overflow-y: scroll;">
-          <div class="chat-content col-sm-12">
-            <p *ngFor="let message of chatDataService.activeChatRoom.messages"><b>{{ message.user.name }}:</b> {{ message.content }} <small>({{ message.timestamp }})</small></p>
+        <div class="row">
+          <div class="row col-8" style="height: 23rem;margin-top: 1rem;overflow-y: scroll;">
+            <div class="chat-content col-sm-12">
+              <p *ngFor="let message of chatDataService.activeChatRoom.messages"><b>{{ message.user.name }}:</b> {{ message.content }} <small>({{ message.timestamp }})</small></p>
+            </div>
+            <img *ngIf="!isReadyToChat" src="../../assets/loading.gif">
           </div>
-          <img *ngIf="!isReadyToChat" src="../../assets/loading.gif">
+          <div class="col-4 row" style="height: 23rem;">
+            <video #streamVideo width="200" height="160" class="col-12" poster="../../assets/avatar.png"></video>
+            <video #receiveVideo width="200" height="160" class="col-12" poster="../../assets/avatar.png"></video>
+          </div>
         </div>
         <div class="row col-12">
           <input type="file" name="files" class="col-sm-12 chat-file">

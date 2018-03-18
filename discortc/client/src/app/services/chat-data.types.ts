@@ -6,7 +6,7 @@ export class User {
 }
 
 export class RoomMember {
-  constructor(public user: User, public peerConnection: Peer){
+  constructor(public user: User, public peerConnection: Peer, public stream: any = undefined){
   }
 }
 

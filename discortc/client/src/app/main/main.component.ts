@@ -1,7 +1,8 @@
-import {Component, OnInit, ApplicationRef} from '@angular/core';
+import {Component, OnInit, ApplicationRef, ViewChild, ElementRef} from '@angular/core';
 import {ChatDataService} from "../services/chat-data.service";
 import {Message, Room, RoomMember, User} from "../services/chat-data.types";
 import {Router} from "@angular/router";
+import {EventEmitter} from "events";
 
 @Component({
   selector: 'app-main',
@@ -14,6 +15,10 @@ export class MainComponent implements OnInit {
   chatInput = '';
 
   isReadyToChat: boolean = false;
+
+  private  streamVideo: ElementRef;
+  private receiveVideo: ElementRef;
+  private elementArrived = new EventEmitter();
 
   constructor(
     public chatDataService: ChatDataService,
@@ -28,14 +33,21 @@ export class MainComponent implements OnInit {
 
   ngOnInit(){
 
-    if (this.chatDataService.userName === undefined){
-      this.router.navigate([''], {}).catch(console.log);
-    }
+    this.redirectIfDirectLink();
 
     this.initChatServer();
 
     this.registerOnChatServer();
   }
+
+  /*ngAfterViewInit(){
+    this.chatDataService.addVideoElements(
+      [this.streamVideo.nativeElement, this.receiveVideo.nativeElement]
+    );
+    setTimeout(() => {
+      console.log(this.streamVideo);
+    }, 2000);
+  }*/
 
   ngOnDestroy(){
     this.chatDataService.close();
@@ -48,16 +60,26 @@ export class MainComponent implements OnInit {
   enterRoom(recipientName: string){
     this.isReadyToChat = false;
     this.showRoom(Room.Empty);
-    const room = this.chatDataService.getChatRoom(recipientName);
-    if (!room) {
-      const remoteUser = this.chatDataService.getUser(recipientName);
-      this.chatDataService.createRoom(remoteUser, true, this.loadRoomData.bind(this), () => {
-        console.log('New message! TICK!');
-        this.app.tick();
-      });
+    const enterRoomVideoReady = () =>{
+      this.chatDataService.addVideoElements(
+        this.streamVideo.nativeElement, this.receiveVideo.nativeElement
+      );
+      const room = this.chatDataService.getChatRoom(recipientName);
+      if (!room) {
+        const remoteUser = this.chatDataService.getUser(recipientName);
+        this.chatDataService.createRoom(remoteUser, true, this.loadRoomData.bind(this), () =>{
+          console.log('New message! TICK!');
+          this.app.tick();
+        });
+      } else {
+        const roomMember = room.members.find((member) => member.user.name === recipientName);
+        this.loadRoomData(roomMember, room);
+      }
+    };
+    if (this.isVideoElementsReady()){
+      enterRoomVideoReady();
     } else {
-      const roomMember = room.members.find((member) => member.user.name === recipientName);
-      this.loadRoomData(roomMember, room);
+      this.elementArrived.on('videoElementsReady', enterRoomVideoReady);
     }
   }
 
@@ -136,10 +158,57 @@ export class MainComponent implements OnInit {
     console.log('Ready to chat!');
     this.showRoom(room);
     this.isReadyToChat = true;
+    console.log(recipientMember.stream, this.receiveVideo);
+    if (recipientMember.stream && this.receiveVideo){
+      this.receiveVideo.nativeElement.srcObject = recipientMember.stream;
+      this.receiveVideo.nativeElement.play();
+    }
   }
 
   get currentUser(): User {
     return new User(this.chatDataService.userName);
+  }
+
+  private redirectIfDirectLink(){
+    if (this.chatDataService.userName === undefined){
+      this.router.navigate([''], {}).catch(console.log);
+    }
+  }
+
+  private isVideoElementsReady(): boolean {
+    return !!this.streamVideo && !!this.receiveVideo;
+  }
+
+  //
+  // Setter for ngIf-ed DOM elements
+  //
+
+  @ViewChild('streamVideo') set setStreamVideo(element: ElementRef) {
+    this.streamVideo = element;
+    if (element){
+      if (this.chatDataService.localStream){
+        this.streamVideo.nativeElement.srcObject = this.chatDataService.localStream;
+        this.streamVideo.nativeElement.play();
+      }
+      if (this.isVideoElementsReady()) {
+        this.elementArrived.emit('videoElementsReady');
+      }
+    }
+    console.log(`streamVideo element: ${element}`);
+  }
+
+  @ViewChild('receiveVideo') set setReceiveVideo(element: ElementRef) {
+    this.receiveVideo = element;
+    if (element){
+      if (this.chatDataService.localStream){
+        this.streamVideo.nativeElement.srcObject = this.chatDataService.localStream;
+        this.streamVideo.nativeElement.play();
+      }
+      if (this.isVideoElementsReady()) {
+        this.elementArrived.emit('videoElementsReady');
+      }
+    }
+    console.log(`receiveVideo element: ${element}`);
   }
 
 }
