@@ -1,4 +1,4 @@
-import {createServer, Server} from 'http';
+import {Server} from 'http';
 import * as express from 'express';
 import * as socketIo from 'socket.io';
 import * as path from "path";
@@ -7,7 +7,6 @@ import {MessageRouter} from "./chat.server";
 import {User} from "./chat.types";
 
 export class ChatServer {
-  public static readonly PORT: number = 80;
   private app: express.Application;
   private server: Server;
   private io: SocketIO.Server;
@@ -19,7 +18,6 @@ export class ChatServer {
     this.users = [];
 
     this.createApp();
-    this.config();
     this.serveStaticFiles();
     this.createServer();
     this.sockets();
@@ -31,11 +29,20 @@ export class ChatServer {
   }
 
   private createServer(): void{
-    this.server = createServer(this.app);
-  }
-
-  private config(): void{
-    this.port = ChatServer.PORT || process.env.PORT;
+    const fs = require('fs');
+    const http = require('http');
+    const https = require('https');
+    try {
+      this.port = 443;
+      const privateKey = fs.readFileSync('/home/bebe/ssl/jbalint_me.key', 'utf8');
+      const certificate = fs.readFileSync('/home/bebe/ssl/jbalint_me.crt', 'utf8');
+      const credentials = {key: privateKey, cert: certificate};
+      this.server = https.createServer(credentials, this.app);
+    } catch (err){
+      console.log(err.toString());
+      this.port = 80;
+      this.server = http.createServer(this.app);
+    }
   }
 
   private sockets(): void{
@@ -44,7 +51,7 @@ export class ChatServer {
 
   private listen(): void{
 
-    this.server.listen(this.port, () =>{
+    this.server.listen(this.port, () => {
       console.log('WebSocket running on port %s', this.port);
     });
 
