@@ -2,6 +2,7 @@
 export enum MessageType {
   UserList = 'UserList',
   NewUser = 'NewUser',
+  DisconnectedUser = 'DisconnectedUser',
   IsUserNameUsed = 'IsUserNameUsed',
   SDPExchange = 'SDPExchange',
 }
@@ -18,6 +19,16 @@ export class TypedMessage {
 export class NewUserMessage extends TypedMessage {
   constructor(public userName: string){
     super(MessageType.NewUser);
+  }
+}
+
+//
+// DisconnectedUser
+//
+
+export class DisconnectedUserMessage extends TypedMessage {
+  constructor(public userName: string){
+    super(MessageType.DisconnectedUser);
   }
 }
 

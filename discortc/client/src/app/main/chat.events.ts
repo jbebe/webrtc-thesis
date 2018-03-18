@@ -4,7 +4,8 @@ import {
   TypedMessage,
   UserListResponse,
   SdpExchangeResponse,
-  NewUserMessage
+  NewUserMessage,
+  DisconnectedUserMessage
 }
   from "../../../../common/src/types";
 import {Room, RoomMember, User} from "../services/chat-data.types";
@@ -59,6 +60,17 @@ export class ChatEvents {
       this.chatDataService.users.push(
         new User(newUserMsg.userName)
       );
+    }
+  }
+
+  DisconnectedUser(){
+    const disconnectedUserMsg = this.message as DisconnectedUserMessage;
+    const users = this.chatDataService.users;
+    for (let i = 0, len = users.length; i < len; ++i){
+      if (users[i].name === disconnectedUserMsg.userName){
+        users.splice(i, 1);
+        break;
+      }
     }
   }
 

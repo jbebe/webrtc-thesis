@@ -1,6 +1,7 @@
 import {Component, OnInit, ApplicationRef} from '@angular/core';
 import {ChatDataService} from "../services/chat-data.service";
 import {Message, Room, RoomMember, User} from "../services/chat-data.types";
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-main',
@@ -14,7 +15,11 @@ export class MainComponent implements OnInit {
 
   isReadyToChat: boolean = false;
 
-  constructor(public chatDataService: ChatDataService, private app: ApplicationRef){
+  constructor(
+    public chatDataService: ChatDataService,
+    private app: ApplicationRef,
+    private router: Router
+  ){
   }
 
   //
@@ -22,6 +27,10 @@ export class MainComponent implements OnInit {
   //
 
   ngOnInit(){
+
+    if (this.chatDataService.userName === undefined){
+      this.router.navigate([''], {}).catch(console.log);
+    }
 
     this.initChatServer();
 
@@ -72,6 +81,19 @@ export class MainComponent implements OnInit {
   }
 
   isNewMessagePresent(username: string): boolean {
+    const isActiveConversationWithUser = ((): boolean => {
+      const activeChatRoom = this.chatDataService.activeChatRoom;
+      if (activeChatRoom){
+        return activeChatRoom.members.some(
+          (member) => member.user.name === username
+        );
+      } else {
+        return false;
+      }
+    })();
+    if (isActiveConversationWithUser){
+      return false;
+    }
     return this.getNewMessageCount(username) > 0;
   }
 
@@ -117,7 +139,7 @@ export class MainComponent implements OnInit {
   }
 
   get currentUser(): User {
-    return new User(this.chatDataService.nickname);
+    return new User(this.chatDataService.userName);
   }
 
 }

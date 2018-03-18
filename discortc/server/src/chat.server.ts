@@ -5,6 +5,7 @@ import {
   IsUserNameUsedRequest,
   IsUserNameUsedResponse,
   NewUserMessage,
+  DisconnectedUserMessage,
   UserListResponse
 } from "./../../common/src/types";
 import {User} from "./chat.types";
@@ -27,7 +28,7 @@ export class MessageRouter {
       .map((u) => u.name)
       .filter((n) => n !== this.currentUser.name);
     const usersResponse = JSON.stringify(new UserListResponse(users));
-    console.log(`Server -> Client: ${users}`);
+    console.log(`Server -> Client: ${usersResponse}`);
     this.socket.emit('message', usersResponse);
   }
 
@@ -60,6 +61,11 @@ export class MessageRouter {
     const userInUseResponse = JSON.stringify(new IsUserNameUsedResponse(isUsed));
     console.log(`Server -> Client: ${userInUseResponse}`);
     this.socket.emit('message', userInUseResponse);
+  }
+
+  static DisconnectedUser(user: User){
+    const disconnectedUserMessage = JSON.stringify(new DisconnectedUserMessage(user.name));
+    user.socket.broadcast.emit('message', disconnectedUserMessage);
   }
 
   static getUserBySocketId(socketId: any, users: User[]): User | null{

@@ -11,7 +11,7 @@
           class="name-input"
           placeholder="Your nickname"
           #nameInput
-          [(ngModel)]="chatDataService.nickname"
+          [(ngModel)]="chatDataService.userName"
           (keyup.enter)="enter()"
           [disabled]="loginHappening"
         >
@@ -21,7 +21,7 @@
       <a *ngIf="validateName(nameInput.value)"
          href="javascript:;"
          (click)="enter()"
-         class="btn btn-primary">Login as {{ chatDataService.nickname }}</a>
+         class="btn btn-primary">Login as {{ chatDataService.userName }}</a>
     </div>
   </div>
 </div>

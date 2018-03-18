@@ -31,6 +31,10 @@ export class LoginComponent implements OnInit {
     } else {
       this.loginHappening = true;
     }
+    const userName = this.chatDataService.userName;
+    if (!this.validateName(userName)){
+      return;
+    }
     const userNameHandler = (message: string) => {
       const serverMessage = JSON.parse(message) as IsUserNameUsedResponse;
       if (serverMessage.type === MessageType.IsUserNameUsed){
@@ -44,8 +48,11 @@ export class LoginComponent implements OnInit {
         }
       }
     };
-    this.socketService.onMessage().subscribe(userNameHandler, (error: any) => { throw new Error(error); });
-    this.socketService.send(JSON.stringify(new IsUserNameUsedRequest(this.chatDataService.nickname)));
+    this.socketService.onMessage().subscribe(
+      userNameHandler,
+      (error: any) => { throw new Error(error); }
+      );
+    this.socketService.send(JSON.stringify(new IsUserNameUsedRequest(userName)));
   }
 
   // noinspection JSMethodCanBeStatic

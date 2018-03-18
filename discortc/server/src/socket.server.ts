@@ -65,10 +65,11 @@ export class ChatServer {
       });
 
       socket.on('disconnect', () =>{
-
         console.log('Client disconnected.');
         for (let i = 0; i < this.users.length; ++i){
+          const user: User = this.users[i];
           if (this.users[i].socket.id === socket.id){
+            MessageRouter.DisconnectedUser(user);
             this.users.splice(i, 1);
             break;
           }
@@ -84,6 +85,7 @@ export class ChatServer {
   private serveStaticFiles(){
     const root: string = path.join(process.cwd(), '..', 'client', 'dist');
     this.app.use(express.static(root));
+    this.app.use('/*', express.static(path.join(root, 'index.html')));
     console.log(`Serving static files at "${root}"`);
 
     this.app.all('/')

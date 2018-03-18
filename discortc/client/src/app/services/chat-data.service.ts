@@ -15,7 +15,7 @@ import {ChatEvents} from "../main/chat.events";
 @Injectable()
 export class ChatDataService {
 
-  nickname: string;
+  userName: string;
   users: User[] = [];
   rooms: Room[] = [];
   activeChatRoom: Room;
@@ -48,10 +48,10 @@ export class ChatDataService {
   ){
     const peer = new Peer({
       initiator: isInitiator,
-      trickle: false,
+      trickle: true,
       config: {
         iceServers: [
-          {urls: ['stun:tudor.sch.bme.hu:80'/*, 'turn:tudor.sch.bme.hu'*/]}
+          {urls: ['stun:tudor.sch.bme.hu:8080'/*, 'turn:tudor.sch.bme.hu'*/]}
         ]
       },
     });
@@ -115,7 +115,7 @@ export class ChatDataService {
   }
 
   register(){
-    const newClientMsg = new NewUserMessage(this.nickname);
+    const newClientMsg = new NewUserMessage(this.userName);
     this.socketService.send(JSON.stringify(newClientMsg));
 
     const getUsersMsg = new UserListRequest();
