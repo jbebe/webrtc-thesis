@@ -57,7 +57,7 @@ export class ChatDataService {
         trickle: true,
         config: {
           iceServers: [
-            {urls: ['stun:tudor.sch.bme.hu:8080'/*, 'turn:tudor.sch.bme.hu'*/]}
+            {urls: ['stun:jbalint.me:8080'/*, 'turn:jbalint.me'*/]}
           ]
         },
         stream: stream

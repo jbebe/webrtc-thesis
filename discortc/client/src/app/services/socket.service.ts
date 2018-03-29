@@ -3,7 +3,7 @@ import * as socketIo from 'socket.io-client';
 import {Observable} from "rxjs/Observable";
 import Emitter = SocketIOClient.Emitter;
 
-const SERVER_URL = 'http://127.0.0.1:80';
+const SERVER_URL = location.href; //'http://127.0.0.1:80';
 
 @Injectable()
 export class SocketService {
