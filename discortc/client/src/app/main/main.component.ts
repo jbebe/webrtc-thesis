@@ -132,6 +132,14 @@ export class MainComponent implements OnInit {
     }
   }
 
+  addToCurrentRoom(username: string){
+    const user = this.chatDataService.getUser(username);
+    if (user === null){
+      return;
+    }
+    this.chatDataService.createNewPeer(user, this.chatDataService.activeChatRoom);
+  }
+
   //
   // Helpers
   //
@@ -177,6 +185,20 @@ export class MainComponent implements OnInit {
 
   private isVideoElementsReady(): boolean {
     return !!this.streamVideo && !!this.receiveVideo;
+  }
+
+  public getActiveRoomMemberList(): string[] {
+    return this.chatDataService.activeChatRoom.members.map((member) => member.user.name);
+  }
+
+  public isUserAvailableToJoin(user: User): boolean {
+    return (
+      !!this.chatDataService.activeChatRoom &&
+      this.isReadyToChat &&
+      !this.chatDataService.activeChatRoom.members.some(
+        (member) => member.user.name === user.name
+      )
+    );
   }
 
   //

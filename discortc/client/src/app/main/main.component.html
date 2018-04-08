@@ -29,13 +29,15 @@
   <div class="row">
     <div class="col col-3">
       <ul class="list-group list-group-flush" style="padding:1rem">
-        <a href="javascript:;" class="list-group-item list-group-item-action"
-           *ngFor="let user of chatDataService.users"
-           [ngClass]="isUserActive(user.name)"
-           (click)="enterRoom(user.name)">
-          {{ user.name }}
-          <span class="badge badge-primary badge-pill" *ngIf="isNewMessagePresent(user.name)">{{ getNewMessageCount(user.name) }}</span>
-        </a>
+        <div *ngFor="let user of chatDataService.users" class="list-group-item list-group-item-action">
+          <button *ngIf="isUserAvailableToJoin(user)" type="button" class="btn btn-danger btn-sm" (click)="addToCurrentRoom(user.name)">+</button>
+          <a href="javascript:;"
+             [ngClass]="isUserActive(user.name)"
+             (click)="enterRoom(user.name)">
+            {{ user.name }}
+            <span class="badge badge-primary badge-pill" *ngIf="isNewMessagePresent(user.name)">{{ getNewMessageCount(user.name) }}</span>
+          </a>
+        </div>
       </ul>
     </div>
     <div class="col col-9">
@@ -47,6 +49,9 @@
         <p class="text-justify">Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source.</p>
       </div>
       <div *ngIf="!!chatDataService.activeChatRoom">
+        <div class="row">
+          Active users in chat room: {{ getActiveRoomMemberList().join(',') }}
+        </div>
         <div class="row">
           <div class="row col-8" style="height: 23rem;margin-top: 1rem;overflow-y: scroll;">
             <div class="chat-content col-sm-12">

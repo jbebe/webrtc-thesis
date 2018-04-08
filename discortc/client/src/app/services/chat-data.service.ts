@@ -26,7 +26,7 @@ export class ChatDataService {
 
   constructor(private socketService: SocketService) { }
 
-  getUser(remoteUser: string){
+  getUser(remoteUser: string): User | null {
     for (const user of this.users){
       if (user.name === remoteUser){
         return user;
@@ -50,7 +50,7 @@ export class ChatDataService {
     onMessage: Function,
     sdpMsg: SdpExchangeResponse = null
   ){
-    const gotMedia = (stream) => {
+    const createPeerConnection = (stream) => {
       this.localStream = stream;
       const peer = new Peer({
         initiator: isInitiator,
@@ -108,7 +108,7 @@ export class ChatDataService {
         peer.signal(sdpMsg.sdpObject);
       }
     };
-    navigator.getUserMedia({ video: true, audio: false }, gotMedia, (error) => {
+    navigator.getUserMedia({ video: true, audio: false }, createPeerConnection, (error) => {
       console.log(error);
     });
   }
@@ -157,6 +157,71 @@ export class ChatDataService {
       this.streamVideo = streamVideo;
       this.receiveVideo = receiveVideo;
     }
+  }
+
+  createNewPeer(remoteUser: User, chatRoom: Room, onReady = (member, room) => {}, onMessage = (member, room) => {}){
+    if (!this.activeChatRoom){
+      return;
+    }
+    const isInitiator = true;
+    const createPeerConnection = (stream) => {
+      this.localStream = stream;
+      const peer = new Peer({
+        initiator: isInitiator,
+        trickle: true,
+        config: {
+          iceServers: [
+            {urls: ['stun:jbalint.me:8080'/*, 'turn:jbalint.me'*/]}
+          ]
+        },
+        stream: stream
+      });
+      const remoteRoomMember = new RoomMember(remoteUser, peer);
+      const room = chatRoom;
+      this.rooms.push(room);
+
+      if (this.streamVideo !== undefined && this.streamVideo.srcObject === undefined){
+        this.streamVideo.srcObject = stream;
+        this.streamVideo.play();
+      }
+
+      const onSignal = (sdpHeader) =>{
+        console.log('SDP arrived from server.');
+        if (!peer.connected) {
+          const sdpExchangeMsg = JSON.stringify(
+            new SdpExchangeRequest(remoteUser.name, sdpHeader)
+          );
+          console.log(`CLIENT -> SERVER: ${sdpExchangeMsg.substr(0, 80)}`);
+          this.socketService.send(sdpExchangeMsg);
+        }
+      };
+      peer.on('signal', onSignal);
+      peer.on('error', (err) =>{
+        console.log(`[ERROR]: ${err}`);
+      });
+      peer.on('data', (data) => {
+        room.messages.push(new Message(remoteUser, data, null, room === this.activeChatRoom));
+        console.log('data: ' + data);
+        onMessage(remoteRoomMember, room);
+      });
+      peer.on('stream', (stream) => {
+        console.log('Stream arrived!');
+        if (this.receiveVideo){
+          this.receiveVideo.srcObject = stream;
+          this.receiveVideo.play();
+        } else {
+          remoteRoomMember.stream = stream;
+        }
+      });
+      peer.on('connect', () =>{
+        peer.removeListener('signal', onSignal);
+        console.log('Peer connected.');
+        onReady(remoteRoomMember, room);
+      });
+    };
+    navigator.getUserMedia({ video: true, audio: false }, createPeerConnection, (error) => {
+      console.log(error);
+    });
   }
 }
 
