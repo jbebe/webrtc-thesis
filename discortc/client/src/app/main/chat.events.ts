@@ -5,7 +5,8 @@ import {
   UserListResponse,
   SdpExchangeResponse,
   NewUserMessage,
-  DisconnectedUserMessage
+  DisconnectedUserMessage,
+  UserJoinedResponse
 }
   from "../../../../common/src/types";
 import {Room, RoomMember, User} from "../services/chat-data.types";
@@ -72,6 +73,16 @@ export class ChatEvents {
         break;
       }
     }
+  }
+
+  UserJoined(){
+    const message = this.message as UserJoinedResponse;
+    const newUser = this.chatDataService.getUser(message.newUser);
+    this.chatDataService.createNewPeer(
+      newUser,
+      this.chatDataService.rooms.find((room) => room.host == message.originalUser),
+      false
+    );
   }
 
 }

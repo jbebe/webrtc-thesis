@@ -25,11 +25,11 @@ export class Message {
 }
 
 export class Room {
-  constructor(public members: RoomMember[], public messages: Message[] = []){
+  constructor(public host: string, public members: RoomMember[], public messages: Message[] = []){
   }
 
   static get Empty() {
-    return new Room([]);
+    return new Room(null,[]);
   }
 
   sendMessage(currentUser: User, chatInput: string){

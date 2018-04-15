@@ -1,4 +1,4 @@
-import {Component, OnInit, ApplicationRef, ViewChild, ElementRef} from '@angular/core';
+import {Component, OnInit, ApplicationRef, ViewChild, ElementRef, QueryList, ViewChildren} from '@angular/core';
 import {ChatDataService} from "../services/chat-data.service";
 import {Message, Room, RoomMember, User} from "../services/chat-data.types";
 import {Router} from "@angular/router";
@@ -16,8 +16,8 @@ export class MainComponent implements OnInit {
 
   isReadyToChat: boolean = false;
 
-  private  streamVideo: ElementRef;
-  private receiveVideo: ElementRef;
+  private streamVideo: ElementRef;
+  private receiveVideos: ElementRef[];
   private elementArrived = new EventEmitter();
 
   constructor(
@@ -42,7 +42,7 @@ export class MainComponent implements OnInit {
 
   /*ngAfterViewInit(){
     this.chatDataService.addVideoElements(
-      [this.streamVideo.nativeElement, this.receiveVideo.nativeElement]
+      [this.streamVideo.nativeElement, this.receiveVideos.nativeElement]
     );
     setTimeout(() => {
       console.log(this.streamVideo);
@@ -62,7 +62,7 @@ export class MainComponent implements OnInit {
     this.showRoom(Room.Empty);
     const enterRoomVideoReady = () =>{
       this.chatDataService.addVideoElements(
-        this.streamVideo.nativeElement, this.receiveVideo.nativeElement
+        this.streamVideo.nativeElement, this.receiveVideos
       );
       const room = this.chatDataService.getChatRoom(recipientName);
       if (!room) {
@@ -137,7 +137,12 @@ export class MainComponent implements OnInit {
     if (user === null){
       return;
     }
-    this.chatDataService.createNewPeer(user, this.chatDataService.activeChatRoom);
+    this.chatDataService.createNewPeer(user, this.chatDataService.activeChatRoom, true);
+  }
+
+  loadVideo(event: any, stream: any){
+    const target = event.target || event.srcElement || event.currentTarget;
+    target.src = stream;
   }
 
   //
@@ -166,10 +171,12 @@ export class MainComponent implements OnInit {
     console.log('Ready to chat!');
     this.showRoom(room);
     this.isReadyToChat = true;
-    console.log(recipientMember.stream, this.receiveVideo);
-    if (recipientMember.stream && this.receiveVideo){
-      this.receiveVideo.nativeElement.srcObject = recipientMember.stream;
-      this.receiveVideo.nativeElement.play();
+    console.log(recipientMember.stream, this.receiveVideos);
+    if (recipientMember.stream && this.receiveVideos){
+      this.receiveVideos.forEach((videoElem) => {
+        videoElem.nativeElement.srcObject = recipientMember.stream;
+        videoElem.nativeElement.play();
+      });
     }
   }
 
@@ -184,7 +191,7 @@ export class MainComponent implements OnInit {
   }
 
   private isVideoElementsReady(): boolean {
-    return !!this.streamVideo && !!this.receiveVideo;
+    return !!this.streamVideo && !!this.receiveVideos;
   }
 
   public getActiveRoomMemberList(): string[] {
@@ -219,18 +226,21 @@ export class MainComponent implements OnInit {
     console.log(`streamVideo element: ${element}`);
   }
 
-  @ViewChild('receiveVideo') set setReceiveVideo(element: ElementRef) {
-    this.receiveVideo = element;
-    if (element){
-      if (this.chatDataService.localStream){
-        this.streamVideo.nativeElement.srcObject = this.chatDataService.localStream;
-        this.streamVideo.nativeElement.play();
-      }
-      if (this.isVideoElementsReady()) {
-        this.elementArrived.emit('videoElementsReady');
-      }
+  @ViewChildren('receiveVideos') set setReceiveVideo(elements: QueryList<ElementRef>) {
+    // this.receiveVideos[0].nativeElement.classList.add('isActive');
+    if (elements){
+      this.receiveVideos = elements.toArray();
+      this.receiveVideos.forEach((videoElem, idx) => {
+        if (this.chatDataService.activeChatRoom.members[idx].stream){
+          videoElem.nativeElement.srcObject = this.chatDataService.activeChatRoom.members[idx].stream;
+          videoElem.nativeElement.play();
+        }
+        if (this.isVideoElementsReady()) {
+          this.elementArrived.emit('videoElementsReady');
+        }
+      });
     }
-    console.log(`receiveVideo element: ${element}`);
+    console.log(`receiveVideo element: ${elements}`);
   }
 
 }

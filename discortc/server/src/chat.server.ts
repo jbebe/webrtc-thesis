@@ -6,7 +6,9 @@ import {
   IsUserNameUsedResponse,
   NewUserMessage,
   DisconnectedUserMessage,
-  UserListResponse
+  UserListResponse,
+  UserJoinedRequest,
+  UserJoinedResponse
 } from "./../../common/src/types";
 import {User} from "./chat.types";
 
@@ -19,6 +21,10 @@ export class MessageRouter {
   constructor(private users: User[], private socket: any, private message: TypedMessage){
     this.currentUser = MessageRouter.getUserBySocketId(socket.id, this.users);
   }
+
+  //
+  // Signal Handlers
+  //
 
   UserList(){
     if (!this.currentUser) {
@@ -62,6 +68,26 @@ export class MessageRouter {
     console.log(`Server -> Client: ${userInUseResponse}`);
     this.socket.emit('message', userInUseResponse);
   }
+
+  UserJoined(){
+    const message = this.message as UserJoinedRequest;
+    const affectedConns = this.users.filter(
+      (srvUser) => message.toUsers.some(
+        (msgUser) => msgUser == srvUser.name
+      )
+    ).map(
+      (user) => user.socket
+    );
+    affectedConns.forEach((socket) => {
+      const response = JSON.stringify(new UserJoinedResponse(message.originalUser, message.newUser));
+      console.log(`Server -> Client: ${response}`);
+      socket.emit('message', response);
+    });
+  }
+
+  //
+  // Helpers
+  //
 
   static DisconnectedUser(user: User){
     const disconnectedUserMessage = JSON.stringify(new DisconnectedUserMessage(user.name));

@@ -6,7 +6,8 @@ import {
   UserListRequest,
   SdpExchangeRequest,
   SdpExchangeResponse,
-  NewUserMessage
+  NewUserMessage,
+  UserJoinedRequest
 }
   from "../../../../common/src/types";
 import {SocketService} from "./socket.service";
@@ -21,7 +22,7 @@ export class ChatDataService {
   activeChatRoom: Room;
 
   streamVideo: any;
-  receiveVideo: any;
+  receiveVideos: any;
   localStream: any;
 
   constructor(private socketService: SocketService) { }
@@ -63,7 +64,7 @@ export class ChatDataService {
         stream: stream
       });
       const remoteRoomMember = new RoomMember(remoteUser, peer);
-      const room = new Room([remoteRoomMember]);
+      const room = new Room(this.userName,[remoteRoomMember]);
       this.rooms.push(room);
 
       if (this.streamVideo !== undefined && this.streamVideo.srcObject === undefined){
@@ -92,9 +93,9 @@ export class ChatDataService {
       });
       peer.on('stream', (stream) => {
         console.log('Stream arrived!');
-        if (this.receiveVideo){
-          this.receiveVideo.srcObject = stream;
-          this.receiveVideo.play();
+        if (this.receiveVideos){
+          this.receiveVideos.srcObject = stream;
+          this.receiveVideos.play();
         } else {
           remoteRoomMember.stream = stream;
         }
@@ -152,17 +153,30 @@ export class ChatDataService {
     );
   }
 
-  addVideoElements(streamVideo: any, receiveVideo: any){
-    if (!this.streamVideo || !this.receiveVideo){
+  addVideoElements(streamVideo: any, receiveVideos: any){
+    if (!this.streamVideo || !this.receiveVideos){
       this.streamVideo = streamVideo;
-      this.receiveVideo = receiveVideo;
+      this.receiveVideos = receiveVideos.map((elem) => elem.nativeElement);
     }
   }
 
-  createNewPeer(remoteUser: User, chatRoom: Room, onReady = (member, room) => {}, onMessage = (member, room) => {}){
+  createNewPeer(remoteUser: User, chatRoom: Room, isHost: boolean, onReady = (member, room) => {}, onMessage = (member, room) => {}){
     if (!this.activeChatRoom){
       return;
     }
+
+    if (isHost){
+      const message = JSON.stringify(
+        new UserJoinedRequest(
+          chatRoom.host,
+          remoteUser.name,
+          this.activeChatRoom.members.map((member) => member.user.name)
+        )
+      );
+      console.log(`CLIENT -> SERVER: ${message}`);
+      this.socketService.send(message);
+    }
+
     const isInitiator = true;
     const createPeerConnection = (stream) => {
       this.localStream = stream;
@@ -206,9 +220,11 @@ export class ChatDataService {
       });
       peer.on('stream', (stream) => {
         console.log('Stream arrived!');
-        if (this.receiveVideo){
-          this.receiveVideo.srcObject = stream;
-          this.receiveVideo.play();
+        if (this.receiveVideos){
+          for (let i = 0; i < room.members.length; ++i){
+            this.receiveVideos[i].srcObject = room.members[i].stream;
+            this.receiveVideos[i].play();
+          }
         } else {
           remoteRoomMember.stream = stream;
         }

@@ -5,6 +5,7 @@ export enum MessageType {
   DisconnectedUser = 'DisconnectedUser',
   IsUserNameUsed = 'IsUserNameUsed',
   SDPExchange = 'SDPExchange',
+  UserJoined = 'UserJoined'
 }
 
 export class TypedMessage {
@@ -77,5 +78,20 @@ export class SdpExchangeRequest extends TypedMessage {
 export class SdpExchangeResponse extends TypedMessage {
   constructor(public fromUser: string, public sdpObject: Object){
     super(MessageType.SDPExchange);
+  }
+}
+
+//
+// UserJoined
+//
+export class UserJoinedRequest extends TypedMessage {
+  constructor(public originalUser: string, public newUser: string, public toUsers: string[]){
+    super(MessageType.UserJoined);
+  }
+}
+
+export class UserJoinedResponse extends TypedMessage {
+  constructor(public originalUser: string, public newUser: string){
+    super(MessageType.UserJoined);
   }
 }

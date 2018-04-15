@@ -60,8 +60,8 @@
             <img *ngIf="!isReadyToChat" src="../../assets/loading.gif">
           </div>
           <div class="col-4 row" style="height: 23rem;">
-            <video #streamVideo width="200" height="160" class="col-12" poster="../../assets/avatar.png"></video>
-            <video #receiveVideo width="200" height="160" class="col-12" poster="../../assets/avatar.png"></video>
+            <video #streamVideo (load)="loadVideo($event, chatDataService.localStream)" width="200" height="160" class="col-12" poster="../../assets/avatar.png"></video>
+            <video #receiveVideos *ngFor="let member of chatDataService.activeChatRoom.members" (load)="loadVideo($event, member.stream)" width="200" height="160" class="col-12" poster="../../assets/avatar.png"></video>
           </div>
         </div>
         <div class="row col-12">
