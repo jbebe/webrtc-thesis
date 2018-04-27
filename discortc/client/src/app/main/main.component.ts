@@ -40,15 +40,6 @@ export class MainComponent implements OnInit {
     this.registerOnChatServer();
   }
 
-  /*ngAfterViewInit(){
-    this.chatDataService.addVideoElements(
-      [this.streamVideo.nativeElement, this.receiveVideos.nativeElement]
-    );
-    setTimeout(() => {
-      console.log(this.streamVideo);
-    }, 2000);
-  }*/
-
   ngOnDestroy(){
     this.chatDataService.close();
   }
@@ -67,7 +58,7 @@ export class MainComponent implements OnInit {
       const room = this.chatDataService.getChatRoom(recipientName);
       if (!room) {
         const remoteUser = this.chatDataService.getUser(recipientName);
-        this.chatDataService.createRoom(remoteUser, true, this.loadRoomData.bind(this), () =>{
+        this.chatDataService.createRoom(remoteUser, true, this.loadRoomData.bind(this), () => { this.app.tick(); }, () =>{
           console.log('New message! TICK!');
           this.app.tick();
         });
@@ -137,7 +128,7 @@ export class MainComponent implements OnInit {
     if (user === null){
       return;
     }
-    this.chatDataService.createNewPeer(user, this.chatDataService.activeChatRoom, true);
+    this.chatDataService.createNewPeer(user, this.chatDataService.activeChatRoom, true, () => { this.app.tick() });
   }
 
   loadVideo(event: any, stream: any){
@@ -150,7 +141,7 @@ export class MainComponent implements OnInit {
   //
 
   private initChatServer(){
-    this.chatDataService.init((roomMember, room) =>{
+    this.chatDataService.init(() => this.app.tick(), (roomMember, room) =>{
       // do i have to warn someone about a new message here?
     }, (roomMember, room) => {
       this.app.tick();
@@ -162,15 +153,16 @@ export class MainComponent implements OnInit {
   }
 
   private showRoom(room: Room){
-    console.log(room);
-    this.chatDataService.activeChatRoom = room;
-    room.messages.forEach((message: Message) => message.seen = true);
+    if (room){
+      this.chatDataService.activeChatRoom = room;
+      room.messages.forEach((message: Message) => message.seen = true);
+    }
   }
 
   private loadRoomData(recipientMember: RoomMember, room: Room){
     console.log('Ready to chat!');
     this.showRoom(room);
-    this.isReadyToChat = true;
+    setTimeout(() => this.isReadyToChat = true);
     console.log(recipientMember.stream, this.receiveVideos);
     if (recipientMember.stream && this.receiveVideos){
       this.receiveVideos.forEach((videoElem) => {

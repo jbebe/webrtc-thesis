@@ -47,6 +47,7 @@ export class ChatDataService {
   createRoom(
     remoteUser: User,
     isInitiator: boolean,
+    updateView: () => void,
     onReady: Function,
     onMessage: Function,
     sdpMsg: SdpExchangeResponse = null
@@ -64,7 +65,7 @@ export class ChatDataService {
         stream: stream
       });
       const remoteRoomMember = new RoomMember(remoteUser, peer);
-      const room = new Room(this.userName,[remoteRoomMember]);
+      const room = new Room(isInitiator ? this.userName : remoteUser.name,[remoteRoomMember]);
       this.rooms.push(room);
 
       if (this.streamVideo !== undefined && this.streamVideo.srcObject === undefined){
@@ -93,12 +94,8 @@ export class ChatDataService {
       });
       peer.on('stream', (stream) => {
         console.log('Stream arrived!');
-        if (this.receiveVideos){
-          this.receiveVideos.srcObject = stream;
-          this.receiveVideos.play();
-        } else {
-          remoteRoomMember.stream = stream;
-        }
+        remoteRoomMember.stream = stream;
+        updateView();
       });
       peer.on('connect', () =>{
         peer.removeListener('signal', onSignal);
@@ -114,7 +111,7 @@ export class ChatDataService {
     });
   }
 
-  init(onReady: Function, onMessage: Function){
+  init(updateView: () => void, onReady: Function, onMessage: Function){
     this.socketService.initSocket();
 
     this.socketService.onMessage().subscribe((data) =>{
@@ -122,7 +119,7 @@ export class ChatDataService {
         console.log(`SERVER -> CLIENT: ${data.substr(0, 80)}`);
         const message = JSON.parse(data) as TypedMessage;
         const chatActions =
-          new ChatEvents(this, this.socketService, message, onReady, onMessage);
+          new ChatEvents(this, this.socketService, message, updateView, onReady, onMessage);
         const onError = () =>{
           throw new Error('Missing enum type or wrong message type!');
         };
@@ -160,7 +157,7 @@ export class ChatDataService {
     }
   }
 
-  createNewPeer(remoteUser: User, chatRoom: Room, isHost: boolean, onReady = (member, room) => {}, onMessage = (member, room) => {}){
+  createNewPeer(remoteUser: User, chatRoom: Room, isHost: boolean, updateView: () => void, onReady = (member, room) => {}, onMessage = (member, room) => {}){
     if (!this.activeChatRoom){
       return;
     }
@@ -192,7 +189,7 @@ export class ChatDataService {
       });
       const remoteRoomMember = new RoomMember(remoteUser, peer);
       const room = chatRoom;
-      this.rooms.push(room);
+      room.members.push(remoteRoomMember);
 
       if (this.streamVideo !== undefined && this.streamVideo.srcObject === undefined){
         this.streamVideo.srcObject = stream;
@@ -220,14 +217,8 @@ export class ChatDataService {
       });
       peer.on('stream', (stream) => {
         console.log('Stream arrived!');
-        if (this.receiveVideos){
-          for (let i = 0; i < room.members.length; ++i){
-            this.receiveVideos[i].srcObject = room.members[i].stream;
-            this.receiveVideos[i].play();
-          }
-        } else {
-          remoteRoomMember.stream = stream;
-        }
+        remoteRoomMember.stream = stream;
+        updateView();
       });
       peer.on('connect', () =>{
         peer.removeListener('signal', onSignal);

@@ -16,6 +16,7 @@ export class ChatEvents {
   constructor(private chatDataService: ChatDataService,
               private socketService: SocketService,
               private message: TypedMessage,
+              private updateView: () => void,
               private onReady: Function,
               private onMessage: Function){
   }
@@ -50,7 +51,7 @@ export class ChatEvents {
     } else {
       // new call, we have to accept the peer offer and create a room
       console.log('Create new peer on request.');
-      this.chatDataService.createRoom(senderUser, false, this.onReady, this.onMessage, sdpMsg);
+      this.chatDataService.createRoom(senderUser, false, this.updateView, this.onReady, this.onMessage, sdpMsg);
     }
   }
 
@@ -81,7 +82,8 @@ export class ChatEvents {
     this.chatDataService.createNewPeer(
       newUser,
       this.chatDataService.rooms.find((room) => room.host == message.originalUser),
-      false
+      false,
+      this.updateView
     );
   }
 
