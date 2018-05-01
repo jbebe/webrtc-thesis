@@ -12,7 +12,7 @@
           placeholder="Your nickname"
           #nameInput
           [(ngModel)]="chatDataService.userName"
-          (keyup.enter)="enter()"
+          (keyup.enter)="validateName(nameInput.value) && enter()"
           [disabled]="loginHappening"
         >
         <br>

@@ -38,6 +38,7 @@
             <span class="badge badge-primary badge-pill" *ngIf="isNewMessagePresent(user.name)">{{ getNewMessageCount(user.name) }}</span>
           </a>
         </div>
+        <i *ngIf="chatDataService.users.length === 0">No online user is present now</i>
       </ul>
     </div>
     <div class="col col-9">
@@ -50,12 +51,14 @@
       </div>
       <div *ngIf="!!chatDataService.activeChatRoom">
         <div class="row">
-          Active users in chat room: {{ getActiveRoomMemberList().join(',') }}
-        </div>
-        <div class="row">
           <div class="row col-8" style="height: 23rem;margin-top: 1rem;overflow-y: scroll;">
+            <div class="alert alert-secondary userList col-sm-12" style="height: 3rem" role="alert">
+              Active users in chat room: <b *ngFor="let name of getActiveRoomMemberList()">{{ name }}</b>
+            </div>
             <div class="chat-content col-sm-12">
-              <p *ngFor="let message of chatDataService.activeChatRoom.messages"><b>{{ message.user.name }}:</b> {{ message.content }} <small>({{ message.timestamp }})</small></p>
+              <p *ngFor="let message of chatDataService.activeChatRoom.messages">
+                <b>{{ message.user.name }}:</b> {{ message.content }} <small>({{ message.timestamp }})</small>
+              </p>
             </div>
             <img *ngIf="!isReadyToChat" src="../../assets/loading.gif">
           </div>

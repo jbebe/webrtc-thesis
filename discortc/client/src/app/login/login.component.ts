@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, ElementRef, OnInit, Renderer2, ViewChild} from '@angular/core';
 import {ChatDataService} from "../services/chat-data.service";
 import {ActivatedRoute, Router} from '@angular/router';
 import {SocketService} from "../services/socket.service";
@@ -13,16 +13,22 @@ export class LoginComponent implements OnInit {
 
   public isNickNameInUse;
   public loginHappening = false;
+  @ViewChild('nameInput') private input: ElementRef;
 
   constructor(
     public chatDataService: ChatDataService,
     private socketService: SocketService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private renderer: Renderer2
     ) { }
 
   ngOnInit() {
     this.socketService.initSocket();
+  }
+
+  ngAfterViewInit(){
+    this.renderer.selectRootElement(this.input["nativeElement"]).focus();
   }
 
   public enter(){

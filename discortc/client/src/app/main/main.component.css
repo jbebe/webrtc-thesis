@@ -23,3 +23,11 @@
 .navbar {
   border-bottom: lightgrey 1px solid;
 }
+
+.userList > b::after {
+  content: ', ';
+}
+
+.userList > b:last-child::after {
+  content: '';
+}
