@@ -48,6 +48,8 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 $folder = Join-Path -Path $pwd -ChildPath "source"
 $docx = Join-Path -Path $pwd -ChildPath "thesis.docx"
 $pdf = Join-Path -Path $pwd -ChildPath "thesis.pdf"
+$xmlPath = [io.path]::combine($folder, 'word', 'document.xml')
+$textPath = [io.path]::combine($folder, 'word', 'raw.txt')
 
 Write-Host "Load text from raw.txt to document.xml"
 MergeFragments
