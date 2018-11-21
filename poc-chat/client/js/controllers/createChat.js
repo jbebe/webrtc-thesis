@@ -9,7 +9,7 @@ export const createChat = async (rtcConfig, router) =>{
   
   // render view
   const rendered = Mustache.render(page, {
-    'user-type': 'host',
+    'user-type': 'client',
     'modal': {
       'title': 'Add Client\'s SDP Header',
       'body': `<textarea class="console col-sm-12" style="height:15rem"></textarea>`,
@@ -56,10 +56,12 @@ export const createChat = async (rtcConfig, router) =>{
   rtcController.init().then(async () =>{
     rtcController.getLocalDescription().then(description =>{
       const sdpContent = $('#sdp-content');
+      const sdpCopyBtn = $('#copy-sdp');
       sdpContent.css({
         'background': 'none'
       });
-      sdpContent.text(JSON.stringify(description));
+      sdpContent.text(description.sdp);
+      sdpCopyBtn.attr('data-clipboard-text', JSON.stringify(description));
       // highlight syntax
       initHighlight('pre.language-sdp');
     }).catch(trace);

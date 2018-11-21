@@ -9,9 +9,9 @@ export const joinChat = async (rtcConfig, router) => {
   
   // render view
   const rendered = Mustache.render(page, {
-    'user-type': 'client',
+    'user-type': 'host',
     'modal': {
-      'title': 'Add Server\'s SDP Header',
+      'title': 'Add Host\'s SDP Header',
       'body': `<textarea class="console col-sm-12" style="height:15rem"></textarea>`,
       'cancel': 'Cancel',
       'ok': 'Add'
@@ -67,10 +67,12 @@ export const joinChat = async (rtcConfig, router) => {
     rtcController.acceptOffer(JSON.parse(sdpValue));
     rtcController.getLocalDescription().then(description => {
       const sdpContent = $('#sdp-content');
+      const sdpCopyBtn = $('#copy-sdp');
       sdpContent.css({
         'background': 'none'
       });
-      sdpContent.text(JSON.stringify(description));
+      sdpContent.text(description.sdp);
+      sdpCopyBtn.attr('data-clipboard-text', JSON.stringify(description));
       // highlight syntax
       initHighlight('pre.language-sdp');
     }).catch(trace);
